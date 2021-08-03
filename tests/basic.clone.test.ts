@@ -12,7 +12,7 @@ describe("Basic clone functionality", () => {
     expect(JSON.stringify(object)).toEqual(stringify(object));
 
     const root = parseToAst(text, "json");
-    const object2 = parse(text, "json", root);
+    const object2 = parse(text, root);
     const object2Text = stringify(object2);
     assertNumberFormatNotCorrupted(object2Text, false);
 

@@ -9,7 +9,7 @@ describe("Basic functionality", () => {
     const object = parseToObject(text, "json");
 
     const root = parseToAst(text, "json");
-    const object2 = parse(text, "json", root);
+    const object2 = parse(text, root);
 
     expect(object2).toEqual(object);
   });
@@ -19,7 +19,7 @@ describe("Basic functionality", () => {
     const object = parseToObject(text, "yaml");
 
     const root = parseToAst(text, "yaml");
-    const object2 = parse(text, "yaml", root);
+    const object2 = parse(text, root);
 
     expect(object2).toEqual(object);
   });
@@ -29,7 +29,7 @@ describe("Basic functionality", () => {
     const object = parseToObject(text, "json");
 
     const root = parseToAst(text, "json");
-    const object2 = parse(text, "json", root);
+    const object2 = parse(text, root);
 
     expect(object2).toEqual(object);
   });
@@ -49,7 +49,7 @@ describe("Basic functionality", () => {
     const object = parseToObject(text, "yaml");
 
     const root = parseToAst(text, "yaml");
-    const object2 = parse(text, "yaml", root);
+    const object2 = parse(text, root);
 
     expect(object2).toEqual(object);
   });

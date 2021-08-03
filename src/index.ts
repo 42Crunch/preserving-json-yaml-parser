@@ -4,8 +4,8 @@ import { Node, YamlNode } from "@xliic/openapi-ast-node";
 const safePlaceKey = Symbol("vscode-openapi");
 const underscoreRegExp = new RegExp("_", "g");
 
-export function parse(text: string, language: "json" | "yaml", root: Node): any {
-  return dfs(text, language, root);
+export function parse(text: string, root: Node): any {
+  return dfs(text, root);
 }
 
 export function stringify(value: any): string {
@@ -36,7 +36,6 @@ export function simpleClone<T>(orig: T): T {
 
 function dfs(
   text: string,
-  language: "json" | "yaml",
   node: Node,
   o?: any,
   id?: string | number | undefined
@@ -47,9 +46,9 @@ function dfs(
       const key = child.getKey();
       if (isYamlAnchorMergeNode(child)) {
         const value = getNodeValue(child);
-        Object.assign(result, dfs(text, language, new YamlNode(value.value), result, key));
+        Object.assign(result, dfs(text,  new YamlNode(value.value), result, key));
       } else {
-        result[key] = dfs(text, language, child, result, key);
+        result[key] = dfs(text, child, result, key);
       }
     }
     return result;
@@ -57,16 +56,16 @@ function dfs(
     let index = 0;
     const result: any[] = [];
     for (const child of node.getChildren()) {
-      result.push(dfs(text, language, child, result, index));
+      result.push(dfs(text, child, result, index));
       index += 1;
     }
     return result;
   } else if (isYamlAnchorNode(node)) {
     const value = getNodeValue(node);
-    return dfs(text, language, new YamlNode(value), o);
+    return dfs(text, new YamlNode(value), o);
   } else if (isYamlAnchorNodeValue(node)) {
     const value = getNodeValue(node);
-    return dfs(text, language, new YamlNode(value.value), o);
+    return dfs(text, new YamlNode(value.value), o);
   } else {
     let value = node.getValue();
     if (node instanceof YamlNode) {
