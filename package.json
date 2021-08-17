@@ -1,6 +1,6 @@
 {
   "name": "@xliic/preserving-json-yaml-parser",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "YAML/JSON parser and serializer that preserves formatting of the original numerical values (i.e. 1.0 vs 1) and handles integers bigger than MAX_SAFE_INTEGER",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -14,17 +14,17 @@
     "lib/**/*"
   ],
   "dependencies": {
-    "@xliic/openapi-ast-node": "1.4.3",
+    "@xliic/openapi-ast-node": "1.5.0",
     "yaml-language-server-parser": "0.1.2"
   },
   "devDependencies": {
-    "@types/jest": "^26.0.23",
+    "@types/jest": "^27.0.0",
     "@types/js-yaml": "^4.0.2",
     "@types/node": "^14.14.31",
-    "jest": "^27.0.4",
+    "jest": "^27.0.0",
     "js-yaml": "^3.13.1",
     "jsonc-parser": "^3.0.0",
-    "ts-jest": "^27.0.3",
+    "ts-jest": "^27.0.0",
     "typescript": "^4.3.5"
   }
 }

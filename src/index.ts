@@ -34,19 +34,14 @@ export function simpleClone<T>(orig: T): T {
   return o2 as T;
 }
 
-function dfs(
-  text: string,
-  node: Node,
-  o?: any,
-  id?: string | number | undefined
-): any {
+function dfs(text: string, node: Node, o?: any, id?: string | number | undefined): any {
   if (node.isObject()) {
     const result: { [key: string]: any } = {};
     for (const child of node.getChildren()) {
       const key = child.getKey();
       if (isYamlAnchorMergeNode(child)) {
         const value = getNodeValue(child);
-        Object.assign(result, dfs(text,  new YamlNode(value.value), result, key));
+        Object.assign(result, dfs(text, new YamlNode(value.value), result, key));
       } else {
         result[key] = dfs(text, child, result, key);
       }
@@ -213,9 +208,11 @@ function getType(value: any, nullForUndefined?: boolean): string {
 }
 
 function cloneSimpleKey(oFrom: any, oTo: any) {
-  const place = oFrom[safePlaceKey];
-  if (place) {
-    oTo[safePlaceKey] = place;
+  if (oFrom !== undefined && oFrom !== null) {
+    const place = oFrom[safePlaceKey];
+    if (place) {
+      oTo[safePlaceKey] = place;
+    }
   }
 }
 
