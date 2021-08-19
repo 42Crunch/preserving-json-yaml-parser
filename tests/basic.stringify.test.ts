@@ -25,4 +25,14 @@ describe("Basic stringify functionality", () => {
     const value4 = { [Symbol("foo")]: "foo" };
     expect(stringify(value4)).toEqual(JSON.stringify(value4));
   });
+
+  it("Should escape newlines in strings", async () => {
+    const value = { foo: "bar\nbaz" };
+    expect(stringify(value)).toEqual(JSON.stringify(value));
+  });
+
+  it("Should handle unicode", async () => {
+    const value = { фуу: "бар\nбаз" };
+    expect(stringify(value)).toEqual(JSON.stringify(value));
+  });
 });

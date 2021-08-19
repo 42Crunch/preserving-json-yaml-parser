@@ -173,12 +173,12 @@ function dfsStringify(o: any, safeValue?: string): string {
     default:
       if (isPrimitiveObject(o)) {
         const value = o.valueOf();
-        return type === "string" ? '"' + value + '"' : value;
+        return type === "string" ? JSON.stringify(value) : value;
       }
       if ((type === "number" || type === "integer") && safeValue) {
         return safeValue;
       }
-      return type === "string" ? '"' + o + '"' : o;
+      return type === "string" ? JSON.stringify(o) : o;
   }
 }
 
