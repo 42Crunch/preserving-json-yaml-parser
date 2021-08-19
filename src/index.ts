@@ -64,8 +64,9 @@ function dfs(text: string, node: Node, o?: any, id?: string | number | undefined
   } else {
     let value = node.getValue();
     if (node instanceof YamlNode) {
-      const valueObject = getNodeValue(node).valueObject;
-      if (valueObject !== undefined) {
+      const nodeValue = getNodeValue(node);
+      if (nodeValue && nodeValue.valueObject !== undefined) {
+        const valueObject = nodeValue.valueObject;
         if (typeof valueObject === "number") {
           const range = node.getValueRange();
           if (range) {
@@ -123,7 +124,7 @@ function isYamlAnchorMergeNode(node: Node): boolean {
 function isYamlAnchorNodeValue(node: Node): boolean {
   if (node instanceof YamlNode) {
     const value = getNodeValue(node);
-    if (value.kind === yaml.Kind.ANCHOR_REF) {
+    if (value !== null && value.kind === yaml.Kind.ANCHOR_REF) {
       return true;
     }
   }
