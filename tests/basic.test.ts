@@ -9,7 +9,7 @@ describe("Basic functionality", () => {
     const object = parseToObject(text, "json");
 
     const root = parseToAst(text, "json");
-    const object2 = parse(text, root);
+    const object2 = parse(root);
 
     expect(object2).toEqual(object);
   });
@@ -19,7 +19,7 @@ describe("Basic functionality", () => {
     const object = parseToObject(text, "yaml");
 
     const root = parseToAst(text, "yaml");
-    const object2 = parse(text, root);
+    const object2 = parse(root);
 
     expect(object2).toEqual(object);
   });
@@ -29,7 +29,7 @@ describe("Basic functionality", () => {
     const object = parseToObject(text, "json");
 
     const root = parseToAst(text, "json");
-    const object2 = parse(text, root);
+    const object2 = parse(root);
 
     expect(object2).toEqual(object);
   });
@@ -49,8 +49,28 @@ describe("Basic functionality", () => {
     const object = parseToObject(text, "yaml");
 
     const root = parseToAst(text, "yaml");
-    const object2 = parse(text, root);
+    const object2 = parse(root);
 
     expect(object2).toEqual(object);
+  });
+
+  it("YAML integer leading zeroes", async () => {
+    const object = parseToObject("agent: 007", "yaml");
+    expect(object.agent).toEqual(7);
+  });
+
+  it("YAML integer base 16", async () => {
+    const object = parseToObject("agent: 0x20", "yaml");
+    expect(object.agent).toEqual(32);
+  });
+
+  it("YAML integer base 8", async () => {
+    const object = parseToObject("agent: 0o40", "yaml");
+    expect(object.agent).toEqual(32);
+  });
+
+  it("YAML integer base 2", async () => {
+    const object = parseToObject("agent: 0b100000", "yaml");
+    expect(object.agent).toEqual(32);
   });
 });

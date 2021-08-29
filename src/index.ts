@@ -1,11 +1,18 @@
 import * as yaml from "yaml-language-server-parser";
-import { Node, YamlNode } from "@xliic/openapi-ast-node";
+import { Node, YamlNode, JsonNode } from "@xliic/openapi-ast-node";
+import { reserializeYamlFloat, reserializeYamlInt } from "./yaml";
+import {
+  determineScalarType,
+  parseYamlBoolean,
+  parseYamlFloat,
+  parseYamlInteger,
+  ScalarType,
+} from "yaml-language-server-parser";
 
-const safePlaceKey = Symbol("vscode-openapi");
-const underscoreRegExp = new RegExp("_", "g");
+const preservedKey = Symbol("preserved-key");
 
-export function parse(text: string, root: Node): any {
-  return dfs(text, root);
+export function parse(root: Node): any {
+  return dfs(root);
 }
 
 export function stringify(value: any): string {
@@ -34,16 +41,16 @@ export function simpleClone<T>(orig: T): T {
   return o2 as T;
 }
 
-function dfs(text: string, node: Node, o?: any, id?: string | number | undefined): any {
+function dfs(node: Node, o?: any, id?: string | number | undefined): any {
   if (node.isObject()) {
     const result: { [key: string]: any } = {};
     for (const child of node.getChildren()) {
       const key = child.getKey();
       if (isYamlAnchorMergeNode(child)) {
         const value = getNodeValue(child);
-        Object.assign(result, dfs(text, new YamlNode(value.value), result, key));
+        Object.assign(result, dfs(new YamlNode(value.value), result, key));
       } else {
-        result[key] = dfs(text, child, result, key);
+        result[key] = dfs(child, result, key);
       }
     }
     return result;
@@ -51,62 +58,61 @@ function dfs(text: string, node: Node, o?: any, id?: string | number | undefined
     let index = 0;
     const result: any[] = [];
     for (const child of node.getChildren()) {
-      result.push(dfs(text, child, result, index));
+      result.push(dfs(child, result, index));
       index += 1;
     }
     return result;
   } else if (isYamlAnchorNode(node)) {
     const value = getNodeValue(node);
-    return dfs(text, new YamlNode(value), o);
+    return dfs(new YamlNode(value), o);
   } else if (isYamlAnchorNodeValue(node)) {
     const value = getNodeValue(node);
-    return dfs(text, new YamlNode(value.value), o);
+    return dfs(new YamlNode(value.value), o);
   } else {
-    let value = node.getValue();
     if (node instanceof YamlNode) {
-      const nodeValue = getNodeValue(node);
-      if (nodeValue && nodeValue.valueObject !== undefined) {
-        const valueObject = nodeValue.valueObject;
-        if (typeof valueObject === "number") {
-          const range = node.getValueRange();
-          if (range) {
-            const [start, end] = range;
-            setSafeValue(o, id, normalizeYamlNumber(text.substring(start, end)), valueObject);
-          }
-        }
-        return valueObject;
+      const scalarValue = node.node.key ? node.node.value : node.node;
+      const scalarType = determineScalarType(scalarValue);
+      if (scalarType === ScalarType.int) {
+        const value = parseYamlInteger(scalarValue.value);
+        setPreservedValue(o, id, reserializeYamlInt(scalarValue.value), value);
+        return value;
+      } else if (scalarType === ScalarType.float) {
+        const value = parseYamlFloat(scalarValue.value);
+        setPreservedValue(o, id, reserializeYamlFloat(value), value);
+        return value;
+      } else if (scalarType === ScalarType.bool) {
+        return parseYamlBoolean(scalarValue.value);
+      } else if (scalarType == ScalarType.null) {
+        return null;
+      } else {
+        return scalarValue.value;
       }
     } else {
+      // JSON Node, use string value as is
+      const value = node.getValue();
+      const rawValue = node.getRawValue();
       if (typeof value === "number") {
         const range = node.getValueRange();
         if (range) {
-          const [start, end] = range;
-          setSafeValue(o, id, text.substring(start, end), value);
+          setPreservedValue(o, id, rawValue, value);
         }
       }
     }
-    return value;
+    return node.getValue();
   }
 }
 
-function setSafeValue(
+function setPreservedValue(
   o: any,
   id: string | number | undefined,
   textValue: string,
   value: number
 ): void {
   if (o && id && textValue !== Number(value).toString()) {
-    const place = o[safePlaceKey] || {};
+    const place = o[preservedKey] || {};
     place[id] = textValue;
-    o[safePlaceKey] = place;
+    o[preservedKey] = place;
   }
-}
-
-function normalizeYamlNumber(x: string): string {
-  if (x.indexOf("_") !== -1) {
-    return x.replace(underscoreRegExp, "");
-  }
-  return x;
 }
 
 function getNodeValue(node: Node): any {
@@ -142,7 +148,7 @@ function isYamlAnchorNode(node: Node): boolean {
   return false;
 }
 
-function dfsStringify(o: any, safeValue?: string): string {
+function dfsStringify(o: any, preservedValue?: string): string {
   const type = isPrimitiveObject(o) ? getType(o.valueOf()) : getType(o);
   switch (type) {
     case "object":
@@ -151,7 +157,7 @@ function dfsStringify(o: any, safeValue?: string): string {
       let objText = "{";
       for (const key of keys) {
         i += 1;
-        objText += '"' + key + '":' + dfsStringify(o[key], getSafeValue(o, key));
+        objText += '"' + key + '":' + dfsStringify(o[key], getPreservedValue(o, key));
         if (i < keys.length) {
           objText += ",";
         }
@@ -161,7 +167,7 @@ function dfsStringify(o: any, safeValue?: string): string {
       let arrText = "[";
       for (let i = 0; i < o.length; i++) {
         if (doStringify(o[i])) {
-          arrText += dfsStringify(o[i], getSafeValue(o, i));
+          arrText += dfsStringify(o[i], getPreservedValue(o, i));
         } else {
           arrText += "null";
         }
@@ -175,8 +181,8 @@ function dfsStringify(o: any, safeValue?: string): string {
         const value = o.valueOf();
         return type === "string" ? JSON.stringify(value) : value;
       }
-      if ((type === "number" || type === "integer") && safeValue) {
-        return safeValue;
+      if ((type === "number" || type === "integer") && preservedValue) {
+        return preservedValue;
       }
       return type === "string" ? JSON.stringify(o) : o;
   }
@@ -191,8 +197,8 @@ function isPrimitiveObject(o: any): boolean {
   return o instanceof Number || o instanceof String || o instanceof Boolean;
 }
 
-function getSafeValue(o: any, id: string | number): string | undefined {
-  const place = o[safePlaceKey];
+function getPreservedValue(o: any, id: string | number): string | undefined {
+  const place = o[preservedKey];
   return place ? place[id] : undefined;
 }
 
@@ -210,9 +216,9 @@ function getType(value: any, nullForUndefined?: boolean): string {
 
 function cloneSimpleKey(oFrom: any, oTo: any) {
   if (oFrom !== undefined && oFrom !== null) {
-    const place = oFrom[safePlaceKey];
+    const place = oFrom[preservedKey];
     if (place) {
-      oTo[safePlaceKey] = place;
+      oTo[preservedKey] = place;
     }
   }
 }

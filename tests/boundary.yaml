@@ -23,7 +23,7 @@ components:
         - message
       properties:
         code:
-          maximum: 666666_777777_888888_99999
+          maximum: 66666677777788888899999
           minimum: 6.000e23
         c:
           baz: 1.123

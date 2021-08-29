@@ -111,7 +111,7 @@ components:
       properties:
         code:
           <<: *anchor2
-          maximum: 9007_1992_5474_0991
+          maximum: 9007199254740991
           minimum: 6.003e+23
         message:
           type: string
