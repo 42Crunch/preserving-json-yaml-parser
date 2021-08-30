@@ -1,4 +1,9 @@
-import { visitObject } from "./object";
+/*
+ Copyright (c) 42Crunch Ltd. All rights reserved.
+ Licensed under the GNU Affero General Public License version 3. See LICENSE.txt in the project root for license information.
+*/
+
+import { visitObject } from "./visit/object";
 
 export function stringify(value: any): string {
   // safeguard for falsy values
@@ -12,7 +17,7 @@ export function stringify(value: any): string {
     return typeof key === "string" ? `${JSON.stringify(key)}:${value}` : value;
   }
 
-  visitObject(undefined, "", value, {
+  visitObject(undefined, "fakeroot", value, {
     onObjectStart: (parent: any, key: string | number, value: any) => {
       result += keyed(key, "{");
     },
@@ -40,5 +45,6 @@ export function stringify(value: any): string {
     },
   });
 
-  return result.slice(3, -1);
+  // trim "fakeroot": and trailing comma
+  return result.slice(11, -1);
 }

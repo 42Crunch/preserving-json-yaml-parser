@@ -1,3 +1,8 @@
+/*
+ Copyright (c) 42Crunch Ltd. All rights reserved.
+ Licensed under the GNU Affero General Public License version 3. See LICENSE.txt in the project root for license information.
+*/
+
 import {
   YAMLMapping,
   YAMLNode,
@@ -11,7 +16,7 @@ import {
   parseYamlBoolean,
   YAMLAnchorReference,
 } from "yaml-language-server-parser";
-import { AstVisitor } from "./types";
+import { AstVisitor } from "../types";
 
 export function visitYaml(
   parent: YAMLNode | undefined,

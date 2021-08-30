@@ -1,8 +1,13 @@
+/*
+ Copyright (c) 42Crunch Ltd. All rights reserved.
+ Licensed under the GNU Affero General Public License version 3. See LICENSE.txt in the project root for license information.
+*/
+
 import { Node, YamlNode, JsonNode } from "@xliic/openapi-ast-node";
 
 import { AstVisitor } from "./types";
-import { visitYaml } from "./yaml";
-import { visitJson } from "./json";
+import { visitYaml } from "./visit/yaml";
+import { visitJson } from "./visit/json";
 import { setPreservedValue } from "./preserve";
 
 export function parse(root: Node): any {
