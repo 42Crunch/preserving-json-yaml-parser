@@ -1,6 +1,6 @@
 import { Node, YamlNode, JsonNode } from "@xliic/openapi-ast-node";
 
-import { JSONVisitor } from "./types";
+import { AstVisitor } from "./types";
 import { visitYaml } from "./yaml";
 import { visitJson } from "./json";
 import { setPreservedValue } from "./preserve";
@@ -34,7 +34,7 @@ export function parse(root: Node): any {
   return stack[0].fakeroot;
 }
 
-export function visit(node: Node, key: string, visitor: JSONVisitor): any {
+export function visit(node: Node, key: string, visitor: AstVisitor): any {
   if (node instanceof JsonNode) {
     visitJson(undefined, key, node.node, visitor);
   } else if (node instanceof YamlNode) {

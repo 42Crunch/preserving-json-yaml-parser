@@ -11,13 +11,13 @@ import {
   parseYamlBoolean,
   YAMLAnchorReference,
 } from "yaml-language-server-parser";
-import { JSONVisitor } from "./types";
+import { AstVisitor } from "./types";
 
 export function visitYaml(
   parent: YAMLNode | undefined,
   key: number | string,
   node: YAMLNode,
-  visitor: JSONVisitor
+  visitor: AstVisitor
 ): any {
   if (node.kind === Kind.MAP) {
     visitor.onObjectStart(parent, key, node);

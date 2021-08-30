@@ -1,5 +1,5 @@
 import { getPreservedValue } from "./preserve";
-import { JSONVisitor, ObjectVisitor } from "./types";
+import { AstVisitor, ObjectVisitor } from "./types";
 function getType(node: any): "object" | "array" | "value" {
   if (typeof node === "object") {
     if (

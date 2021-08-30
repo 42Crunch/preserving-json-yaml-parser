@@ -1,11 +1,11 @@
-import { JSONVisitor } from "./types";
+import { AstVisitor } from "./types";
 import { ExtendedNode as ExtendedJsonNode } from "@xliic/openapi-ast-node";
 
 export function visitJson(
   parent: ExtendedJsonNode | undefined,
   key: number | string,
   node: ExtendedJsonNode,
-  visitor: JSONVisitor
+  visitor: AstVisitor
 ): any {
   if (node.type === "object") {
     visitor.onObjectStart(parent, key, node);
