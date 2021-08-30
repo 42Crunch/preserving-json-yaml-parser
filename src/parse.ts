@@ -9,7 +9,7 @@ export function parse(root: Node): any {
   let container: any = {};
   const stack: any[] = [container];
 
-  visit(root, "root", {
+  visit(root, "fakeroot", {
     onObjectStart: (parent: any, key: string | number) => {
       stack.push(container);
       container = container[key] = {};
@@ -31,7 +31,7 @@ export function parse(root: Node): any {
       }
     },
   });
-  return stack[0].root;
+  return stack[0].fakeroot;
 }
 
 export function visit(node: Node, key: string, visitor: JSONVisitor): any {

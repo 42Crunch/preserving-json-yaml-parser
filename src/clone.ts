@@ -5,7 +5,7 @@ export function simpleClone<T>(orig: T): T {
   let container: any = {};
   const stack: any[] = [container];
 
-  visitObject(undefined, "root", orig, {
+  visitObject(undefined, "fakeroot", orig, {
     onObjectStart: (parent: any, key: string | number, value: any) => {
       stack.push(container);
       container = container[key] = {};
@@ -27,5 +27,5 @@ export function simpleClone<T>(orig: T): T {
     },
   });
 
-  return stack[0].root;
+  return stack[0].fakeroot;
 }
