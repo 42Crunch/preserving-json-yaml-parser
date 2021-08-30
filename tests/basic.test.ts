@@ -38,8 +38,8 @@ describe("Basic functionality", () => {
     const text = readFileSync(resolve(__dirname, "petstore-v3.yaml"), { encoding: "utf8" });
 
     // Just make sure all possible anchors are there in the file
-    expect(text.indexOf("Pet: &anchor1") > 0 && text.indexOf("<<: *anchor1") > 0).toBeTruthy();
-    expect(text.indexOf("id: &anchor2") > 0 && text.indexOf("<<: *anchor2") > 0).toBeTruthy();
+    expect(text.indexOf("Pet: &anchor1") > 0).toBeTruthy();
+    expect(text.indexOf("id: &anchor2") > 0).toBeTruthy();
     expect(text.indexOf("- &anchor3 pets") > 0 && text.indexOf("- *anchor3") > 0).toBeTruthy();
     expect(text.indexOf("$ref: &anchor4") > 0 && text.indexOf("$ref: *anchor4") > 0).toBeTruthy();
     expect(

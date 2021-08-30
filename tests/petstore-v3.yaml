@@ -97,8 +97,6 @@ components:
           type: string
         tag:
           type: string
-    A:
-      <<: *anchor1
     Pets:
       type: array
       items:
@@ -110,7 +108,6 @@ components:
         - message
       properties:
         code:
-          <<: *anchor2
           maximum: 9007199254740991
           minimum: 6.003e+23
         message:
