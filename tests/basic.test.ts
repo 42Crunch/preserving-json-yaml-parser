@@ -9,7 +9,7 @@ describe("Basic functionality", () => {
     const object = parseToObject(text, "json");
 
     const root = parseToAst(text, "json");
-    const object2 = parse(text, root);
+    const object2 = parse(root);
 
     expect(object2).toEqual(object);
   });
@@ -19,7 +19,7 @@ describe("Basic functionality", () => {
     const object = parseToObject(text, "yaml");
 
     const root = parseToAst(text, "yaml");
-    const object2 = parse(text, root);
+    const object2 = parse(root);
 
     expect(object2).toEqual(object);
   });
@@ -29,7 +29,7 @@ describe("Basic functionality", () => {
     const object = parseToObject(text, "json");
 
     const root = parseToAst(text, "json");
-    const object2 = parse(text, root);
+    const object2 = parse(root);
 
     expect(object2).toEqual(object);
   });
@@ -38,8 +38,8 @@ describe("Basic functionality", () => {
     const text = readFileSync(resolve(__dirname, "petstore-v3.yaml"), { encoding: "utf8" });
 
     // Just make sure all possible anchors are there in the file
-    expect(text.indexOf("Pet: &anchor1") > 0 && text.indexOf("<<: *anchor1") > 0).toBeTruthy();
-    expect(text.indexOf("id: &anchor2") > 0 && text.indexOf("<<: *anchor2") > 0).toBeTruthy();
+    expect(text.indexOf("Pet: &anchor1") > 0).toBeTruthy();
+    expect(text.indexOf("id: &anchor2") > 0).toBeTruthy();
     expect(text.indexOf("- &anchor3 pets") > 0 && text.indexOf("- *anchor3") > 0).toBeTruthy();
     expect(text.indexOf("$ref: &anchor4") > 0 && text.indexOf("$ref: *anchor4") > 0).toBeTruthy();
     expect(
@@ -49,8 +49,42 @@ describe("Basic functionality", () => {
     const object = parseToObject(text, "yaml");
 
     const root = parseToAst(text, "yaml");
-    const object2 = parse(text, root);
+    const object2 = parse(root);
 
     expect(object2).toEqual(object);
+  });
+
+  it("YAML null value", async () => {
+    const root = parseToAst("one: null\ntwo: ~\nthree:", "yaml");
+    const object = parse(root);
+    expect(object.one).toEqual(null);
+    expect(object.two).toEqual(null);
+    expect(object.three).toEqual(null);
+  });
+
+  it("JSON null value", async () => {
+    const root = parseToAst('{"one":null}', "json");
+    const object = parse(root);
+    expect(object.one).toEqual(null);
+  });
+
+  it("YAML integer leading zeroes", async () => {
+    const object = parseToObject("agent: 007", "yaml");
+    expect(object.agent).toEqual(7);
+  });
+
+  it("YAML integer base 16", async () => {
+    const object = parseToObject("agent: 0x20", "yaml");
+    expect(object.agent).toEqual(32);
+  });
+
+  it("YAML integer base 8", async () => {
+    const object = parseToObject("agent: 0o40", "yaml");
+    expect(object.agent).toEqual(32);
+  });
+
+  it("YAML integer base 2", async () => {
+    const object = parseToObject("agent: 0b100000", "yaml");
+    expect(object.agent).toEqual(32);
   });
 });
