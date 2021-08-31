@@ -5,7 +5,7 @@
 
 import { Node, YamlNode, JsonNode } from "@xliic/openapi-ast-node";
 
-import { AstVisitor } from "./types";
+import { Visitor } from "./types";
 import { visitYaml } from "./visit/yaml";
 import { visitJson } from "./visit/json";
 import { setPreservedValue } from "./preserve";
@@ -29,9 +29,9 @@ export function parse(root: Node): any {
     onArrayEnd: () => {
       container = stack.pop();
     },
-    onValue: (parent: any, key: string | number, value: any, raw: string) => {
+    onValue: (parent: any, key: string | number, value: any, raw: string | undefined) => {
       container[key] = value;
-      if (typeof value === "number") {
+      if (typeof value === "number" && raw !== undefined) {
         setPreservedValue(container, key, raw);
       }
     },
@@ -39,7 +39,7 @@ export function parse(root: Node): any {
   return stack[0].fakeroot;
 }
 
-export function visit(node: Node, key: string, visitor: AstVisitor): any {
+export function visit(node: Node, key: string, visitor: Visitor): any {
   if (node instanceof JsonNode) {
     visitJson(undefined, key, node.node, visitor);
   } else if (node instanceof YamlNode) {

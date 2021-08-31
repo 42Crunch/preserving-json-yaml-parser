@@ -4,14 +4,9 @@
 */
 
 import { getPreservedValue } from "../preserve";
-import { ObjectVisitor } from "../types";
+import { Visitor } from "../types";
 
-export function visitObject(
-  parent: any,
-  key: number | string,
-  node: any,
-  visitor: ObjectVisitor
-): any {
+export function visitObject(parent: any, key: number | string, node: any, visitor: Visitor): any {
   const type = getType(node);
   if (type === "object") {
     visitor.onObjectStart(parent, key, node);

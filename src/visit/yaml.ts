@@ -16,15 +16,17 @@ import {
   parseYamlBoolean,
   YAMLAnchorReference,
 } from "yaml-language-server-parser";
-import { AstVisitor } from "../types";
+import { Visitor } from "../types";
 
 export function visitYaml(
   parent: YAMLNode | undefined,
   key: number | string,
   node: YAMLNode,
-  visitor: AstVisitor
+  visitor: Visitor
 ): any {
-  if (node.kind === Kind.MAP) {
+  if (node === null) {
+    visitor.onValue(parent, key, null, undefined);
+  } else if (node.kind === Kind.MAP) {
     visitor.onObjectStart(parent, key, node);
     for (const mapping of (<YAMLMapping>node).mappings) {
       visitYaml(node, mapping.key.value, mapping.value, visitor);
@@ -41,7 +43,7 @@ export function visitYaml(
   } else if (node.kind === Kind.SCALAR) {
     const [type, value] = parseYamlScalar(<YAMLScalar>node);
     const text = reserializeYamlValue(type, node.value, value);
-    if (typeof value) visitor.onValue(parent, key, value, text);
+    visitor.onValue(parent, key, value, text);
   }
 }
 

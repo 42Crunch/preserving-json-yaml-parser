@@ -54,6 +54,20 @@ describe("Basic functionality", () => {
     expect(object2).toEqual(object);
   });
 
+  it("YAML null value", async () => {
+    const root = parseToAst("one: null\ntwo: ~\nthree:", "yaml");
+    const object = parse(root);
+    expect(object.one).toEqual(null);
+    expect(object.two).toEqual(null);
+    expect(object.three).toEqual(null);
+  });
+
+  it("JSON null value", async () => {
+    const root = parseToAst('{"one":null}', "json");
+    const object = parse(root);
+    expect(object.one).toEqual(null);
+  });
+
   it("YAML integer leading zeroes", async () => {
     const object = parseToObject("agent: 007", "yaml");
     expect(object.agent).toEqual(7);

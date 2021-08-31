@@ -3,14 +3,14 @@
  Licensed under the GNU Affero General Public License version 3. See LICENSE.txt in the project root for license information.
 */
 
-import { AstVisitor } from "../types";
-import { ExtendedNode as ExtendedJsonNode } from "@xliic/openapi-ast-node";
+import { Visitor } from "../types";
+import { ExtendedNode } from "@xliic/openapi-ast-node";
 
 export function visitJson(
-  parent: ExtendedJsonNode | undefined,
+  parent: ExtendedNode | undefined,
   key: number | string,
-  node: ExtendedJsonNode,
-  visitor: AstVisitor
+  node: ExtendedNode,
+  visitor: Visitor
 ): any {
   if (node.type === "object") {
     visitor.onObjectStart(parent, key, node);
