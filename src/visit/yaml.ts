@@ -40,6 +40,10 @@ export function visitYaml(
     visitor.onArrayEnd();
   } else if (node.kind === Kind.ANCHOR_REF) {
     visitYaml(parent, key, (<YAMLAnchorReference>node).value, visitor);
+  } else if (node.kind === Kind.MAPPING) {
+    // this should not happen normally, but node.kind === Kind.MAPPING can be passed
+    // as root, so we just walk it's contents
+    visitYaml(parent, key, (<YAMLMapping>node).value, visitor);
   } else if (node.kind === Kind.SCALAR) {
     const [type, value] = parseYamlScalar(<YAMLScalar>node);
     const text = reserializeYamlValue(type, node.value, value);

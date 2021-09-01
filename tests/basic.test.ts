@@ -69,22 +69,33 @@ describe("Basic functionality", () => {
   });
 
   it("YAML integer leading zeroes", async () => {
-    const object = parseToObject("agent: 007", "yaml");
+    const object = parse(parseToAst("agent: 007", "yaml"));
     expect(object.agent).toEqual(7);
   });
 
   it("YAML integer base 16", async () => {
-    const object = parseToObject("agent: 0x20", "yaml");
+    const object = parse(parseToAst("agent: 0x20", "yaml"));
     expect(object.agent).toEqual(32);
   });
 
   it("YAML integer base 8", async () => {
-    const object = parseToObject("agent: 0o40", "yaml");
+    const object = parse(parseToAst("agent: 0o40", "yaml"));
     expect(object.agent).toEqual(32);
   });
 
-  it("YAML integer base 2", async () => {
-    const object = parseToObject("agent: 0b100000", "yaml");
-    expect(object.agent).toEqual(32);
+  it("It should allow parsing of a sub-tree of AST in YAML", async () => {
+    const root = parseToAst("foo:\n  bar: baz\nzoom: [1,2,3]", "yaml");
+    const foo = parse(root.find("/foo"));
+    const zoom = parse(root.find("/zoom"));
+    expect(foo).toEqual({ bar: "baz" });
+    expect(zoom).toEqual([1, 2, 3]);
+  });
+
+  it("It should allow parsing of a sub-tree of AST in JSON", async () => {
+    const root = parseToAst('{"foo": {"bar": "baz"}, "zoom":[1,2,3]}', "json");
+    const foo = parse(root.find("/foo"));
+    const zoom = parse(root.find("/zoom"));
+    expect(foo).toEqual({ bar: "baz" });
+    expect(zoom).toEqual([1, 2, 3]);
   });
 });
