@@ -38,8 +38,8 @@ describe("Test YAML Location information and finding nodes by offset", () => {
     const node = parseToAst(yaml, "yaml");
     const object = parse(node);
 
-    expect(findNodeAtOffset(object, 1)).toEqual(1);
-    expect(findNodeAtOffset(object, 4)).toEqual(2);
-    expect(findNodeAtOffset(object, 7)).toEqual(3);
+    expect(findNodeAtOffset(object, 1)[0]).toEqual(1);
+    expect(findNodeAtOffset(object, 4)[0]).toEqual(2);
+    expect(findNodeAtOffset(object, 7)[0]).toEqual(3);
   });
 });

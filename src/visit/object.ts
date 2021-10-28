@@ -9,13 +9,13 @@ import { Visitor } from "../types";
 export function visitObject(parent: any, key: number | string, node: any, visitor: Visitor): any {
   const type = getType(node);
   if (type === "object") {
-    visitor.onObjectStart(parent, key, node);
+    visitor.onObjectStart(parent, key, node, getPreservedLocation(parent, key));
     for (const key in node) {
       visitObject(node, key, node[key], visitor);
     }
     visitor.onObjectEnd();
   } else if (type === "array") {
-    visitor.onArrayStart(parent, key, node);
+    visitor.onArrayStart(parent, key, node, getPreservedLocation(parent, key));
     node.forEach((value: any, index: number) => {
       visitObject(node, index, value, visitor);
     });

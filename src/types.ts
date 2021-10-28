@@ -4,9 +4,19 @@
 */
 
 export interface Visitor {
-  onObjectStart: (parent: any, key: string | number, value: any) => void;
+  onObjectStart: (
+    parent: any,
+    key: string | number,
+    value: any,
+    location: Location | undefined
+  ) => void;
   onObjectEnd: () => void;
-  onArrayStart: (parent: any, key: string | number, value: any) => void;
+  onArrayStart: (
+    parent: any,
+    key: string | number,
+    value: any,
+    location: Location | undefined
+  ) => void;
   onArrayEnd: () => void;
   onValue: (
     parent: any,
@@ -26,3 +36,6 @@ export interface Range {
   start: number;
   end: number;
 }
+
+export type Segment = string | number;
+export type Path = Segment[];

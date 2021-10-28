@@ -24,16 +24,25 @@ export function visitYaml(
   node: YAMLNode,
   visitor: Visitor
 ): any {
+  // this is a workaround for yaml which looks like this - foo:
+  // and equals to foo: null
+  // TODO look into checking value before calling visitYaml() in previous
+  // iteration and injecting a YAMLNode with proper offsets
+
   if (node === null) {
     visitor.onValue(parent, key, null, undefined, { value: { start: 0, end: 0 } });
-  } else if (node.kind === Kind.MAP) {
-    visitor.onObjectStart(parent, key, node);
+    return;
+  }
+
+  const location: Location = { value: { start: node.startPosition, end: node.endPosition } };
+  if (node.kind === Kind.MAP) {
+    visitor.onObjectStart(parent, key, node, location);
     for (const mapping of (<YAMLMapping>node).mappings) {
       visitYaml(mapping, mapping.key.value, mapping.value, visitor);
     }
     visitor.onObjectEnd();
   } else if (node.kind === Kind.SEQ) {
-    visitor.onArrayStart(parent, key, node);
+    visitor.onArrayStart(parent, key, node, location);
     (<YAMLSequence>node).items.forEach((value, index) => {
       visitYaml(node, index, value, visitor);
     });
@@ -47,7 +56,6 @@ export function visitYaml(
   } else if (node.kind === Kind.SCALAR) {
     const [type, value] = parseYamlScalar(<YAMLScalar>node);
     const text = reserializeYamlValue(type, node.value, value);
-    const location: Location = { value: { start: node.startPosition, end: node.endPosition } };
     if (parent.kind === Kind.MAPPING) {
       location.key = { start: parent.key.startPosition, end: parent.key.endPosition };
     }

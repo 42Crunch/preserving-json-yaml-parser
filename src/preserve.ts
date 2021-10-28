@@ -7,6 +7,7 @@ import { Location } from "./types";
 
 const preserveFormattingKey = Symbol("preserve-formatting");
 const preserveLocationKey = Symbol("preserve-location");
+const preserveSlotKey = Symbol("preserve-parent");
 
 export function getPreservedValue(container: any, key: string | number): string | undefined {
   if (container && container[preserveFormattingKey]) {

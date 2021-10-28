@@ -15,14 +15,30 @@ export function parse(root: Node): any {
   const stack: any[] = [container];
 
   visit(root, "fakeroot", {
-    onObjectStart: (parent: any, key: string | number) => {
+    onObjectStart: (
+      parent: any,
+      key: string | number,
+      value: any,
+      location: Location | undefined
+    ) => {
+      if (location) {
+        setPreservedLocation(container, key, location);
+      }
       stack.push(container);
       container = container[key] = {};
     },
     onObjectEnd: () => {
       container = stack.pop();
     },
-    onArrayStart: (parent: any, key: string | number) => {
+    onArrayStart: (
+      parent: any,
+      key: string | number,
+      value: any,
+      location: Location | undefined
+    ) => {
+      if (location) {
+        setPreservedLocation(container, key, location);
+      }
       stack.push(container);
       container = container[key] = [];
     },
