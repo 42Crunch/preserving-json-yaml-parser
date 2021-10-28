@@ -1,8 +1,8 @@
-import { parse, getLocation } from "../src";
+import { parse, getLocation, findNodeAtOffset } from "../src";
 import { parseToAst } from "./utils";
 
-describe("Test YAML Ranges", () => {
-  it("Ranges for object", async () => {
+describe("Test YAML Location information and finding nodes by offset", () => {
+  it("Location info for object", async () => {
     const yaml = "a: b";
     const node = parseToAst(yaml, "yaml");
     const object = parse(node);
@@ -19,7 +19,7 @@ describe("Test YAML Ranges", () => {
     });
   });
 
-  it("Ranges for array", async () => {
+  it("Location info for array", async () => {
     const yaml = "[1, 2, 3]";
     const node = parseToAst(yaml, "yaml");
     const object = parse(node);
@@ -31,5 +31,15 @@ describe("Test YAML Ranges", () => {
         end: 2,
       },
     });
+  });
+
+  it("Location info for array", async () => {
+    const yaml = "[1, 2, 3]";
+    const node = parseToAst(yaml, "yaml");
+    const object = parse(node);
+
+    expect(findNodeAtOffset(object, 1)).toEqual(1);
+    expect(findNodeAtOffset(object, 4)).toEqual(2);
+    expect(findNodeAtOffset(object, 7)).toEqual(3);
   });
 });
