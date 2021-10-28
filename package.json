@@ -14,7 +14,7 @@
     "lib/**/*"
   ],
   "dependencies": {
-    "@xliic/openapi-ast-node": "^1.7.0",
+    "jsonc-parser": "^3.0.0",
     "yaml-language-server-parser": "^0.1.2"
   },
   "devDependencies": {

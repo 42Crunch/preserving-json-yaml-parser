@@ -1,15 +1,14 @@
-import { parse } from "../src";
+import { parseJson, parseYaml } from "../src";
 import { resolve } from "path";
 import { readFileSync } from "fs";
-import { parseToAst, parseToObject } from "./utils";
+import { parseToObject } from "./utils";
 
 describe("Basic functionality", () => {
   it("Test Json 1", async () => {
     const text = readFileSync(resolve(__dirname, "xkcd.json"), { encoding: "utf8" });
     const object = parseToObject(text, "json");
 
-    const root = parseToAst(text, "json");
-    const object2 = parse(root);
+    const [object2] = parseJson(text);
 
     expect(object2).toEqual(object);
   });
@@ -18,8 +17,7 @@ describe("Basic functionality", () => {
     const text = readFileSync(resolve(__dirname, "xkcd.yaml"), { encoding: "utf8" });
     const object = parseToObject(text, "yaml");
 
-    const root = parseToAst(text, "yaml");
-    const object2 = parse(root);
+    const [object2] = parseYaml(text);
 
     expect(object2).toEqual(object);
   });
@@ -28,8 +26,7 @@ describe("Basic functionality", () => {
     const text = readFileSync(resolve(__dirname, "petstore-v3.json"), { encoding: "utf8" });
     const object = parseToObject(text, "json");
 
-    const root = parseToAst(text, "json");
-    const object2 = parse(root);
+    const [object2] = parseJson(text);
 
     expect(object2).toEqual(object);
   });
@@ -48,41 +45,39 @@ describe("Basic functionality", () => {
 
     const object = parseToObject(text, "yaml");
 
-    const root = parseToAst(text, "yaml");
-    const object2 = parse(root);
+    const [object2] = parseYaml(text);
 
     expect(object2).toEqual(object);
   });
 
   it("YAML null value", async () => {
-    const root = parseToAst("one: null\ntwo: ~\nthree:", "yaml");
-    const object = parse(root);
+    const [object] = parseYaml("one: null\ntwo: ~\nthree:");
     expect(object.one).toEqual(null);
     expect(object.two).toEqual(null);
     expect(object.three).toEqual(null);
   });
 
   it("JSON null value", async () => {
-    const root = parseToAst('{"one":null}', "json");
-    const object = parse(root);
+    const [object] = parseJson('{"one":null}');
     expect(object.one).toEqual(null);
   });
 
   it("YAML integer leading zeroes", async () => {
-    const object = parse(parseToAst("agent: 007", "yaml"));
+    const [object] = parseYaml("agent: 007");
     expect(object.agent).toEqual(7);
   });
 
   it("YAML integer base 16", async () => {
-    const object = parse(parseToAst("agent: 0x20", "yaml"));
+    const [object] = parseYaml("agent: 0x20");
     expect(object.agent).toEqual(32);
   });
 
   it("YAML integer base 8", async () => {
-    const object = parse(parseToAst("agent: 0o40", "yaml"));
+    const [object] = parseYaml("agent: 0o40");
     expect(object.agent).toEqual(32);
   });
 
+  /*
   it("It should allow parsing of a sub-tree of AST in YAML", async () => {
     const root = parseToAst("foo:\n  bar: baz\nzoom: [1,2,3]", "yaml");
     const foo = parse(root.find("/foo"));
@@ -98,4 +93,5 @@ describe("Basic functionality", () => {
     expect(foo).toEqual({ bar: "baz" });
     expect(zoom).toEqual([1, 2, 3]);
   });
+  */
 });

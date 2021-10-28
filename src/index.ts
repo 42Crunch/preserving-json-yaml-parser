@@ -4,9 +4,9 @@
 */
 
 import { simpleClone } from "./clone";
-import { parse } from "./parse";
+import { parseJson, parseYaml } from "./parse";
 import { stringify } from "./stringify";
 import { getPreservedLocation as getLocation } from "./preserve";
 import { findNodeAtOffset } from "./location";
 
-export { parse, stringify, simpleClone, getLocation, findNodeAtOffset };
+export { parseJson, parseYaml, stringify, simpleClone, getLocation, findNodeAtOffset };

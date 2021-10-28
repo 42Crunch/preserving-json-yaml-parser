@@ -3,18 +3,102 @@
  Licensed under the GNU Affero General Public License version 3. See LICENSE.txt in the project root for license information.
 */
 
-import { Node, YamlNode, JsonNode } from "@xliic/openapi-ast-node";
-
 import { Location, Visitor } from "./types";
 import { visitYaml } from "./visit/yaml";
 import { visitJson } from "./visit/json";
 import { setPreservedLocation, setPreservedValue } from "./preserve";
 
-export function parse(root: Node): any {
+import { ExtendedError, ExtendedErrorCode, parseTree } from "./json-parser";
+
+import * as json from "jsonc-parser";
+
+import * as yaml from "yaml-language-server-parser";
+import { Schema } from "yaml-language-server-parser/dist/src/schema";
+import { Type } from "yaml-language-server-parser/dist/src/type";
+import * as DEFAULT_SAFE_SCHEMA from "yaml-language-server-parser/dist/src/schema/default_safe";
+
+function extendedErrorToMessage(error: ExtendedError) {
+  if (error.extendedError) {
+    if (error.extendedError === ExtendedErrorCode.DuplicateKey) {
+      return "DuplicateKey";
+    }
+    return "<unknown ExtendedErrorCode>";
+  }
+  return json.printParseErrorCode(error.error);
+}
+
+export function parseJson(
+  text: string
+): [any, { message: string; offset: number; length: number }[]] {
+  const parseErrors: json.ParseError[] = [];
+
+  const node = parseTree(text, parseErrors, {
+    disallowComments: true,
+    allowTrailingComma: false,
+    allowEmptyContent: false,
+  });
+
+  const normalizedErrors = parseErrors.map((error) => ({
+    message: extendedErrorToMessage(error),
+    offset: error.offset,
+    length: error.length,
+  }));
+
+  if (node) {
+    const parsed = runvisitor(visitJson, node);
+    return [parsed, normalizedErrors];
+  }
+
+  return [undefined, normalizedErrors];
+}
+
+export function parseYaml(
+  text: string,
+  customTags?: { [tag: string]: "scalar" | "sequence" | "mapping" }
+): [any, { message: string; offset: number }[]] {
+  const documents: any = [];
+  yaml.loadAll(
+    text,
+    (document) => {
+      documents.push(document);
+    },
+    { schema: createSchema(customTags) }
+  );
+
+  if (documents.length !== 1) {
+    return [null, []];
+  }
+
+  const normalizedErrors = documents[0].errors.map((error: any) => ({
+    message: error.message,
+    offset: error.mark ? error.mark.position : 0,
+  }));
+
+  if (documents[0]) {
+    const parsed = runvisitor(visitYaml, documents[0]);
+    return [parsed, normalizedErrors];
+  }
+
+  return [undefined, normalizedErrors];
+}
+
+function createSchema(
+  customTags: { [tag: string]: "scalar" | "sequence" | "mapping" } | undefined
+): Schema {
+  if (!customTags) {
+    return DEFAULT_SAFE_SCHEMA;
+  }
+
+  const types = Object.entries(customTags).map(([key, value]) => new Type(key, { kind: value }));
+
+  return Schema.create(DEFAULT_SAFE_SCHEMA, types);
+}
+
+function runvisitor(visit: any, root: any) {
   let container: any = {};
   const stack: any[] = [container];
 
-  visit(root, "fakeroot", {
+  visit(root, "fakeroot", root, {
     onObjectStart: (
       parent: any,
       key: string | number,
@@ -62,12 +146,4 @@ export function parse(root: Node): any {
     },
   });
   return stack[0].fakeroot;
-}
-
-export function visit(node: Node, key: string, visitor: Visitor): any {
-  if (node instanceof JsonNode) {
-    visitJson(node.node, key, node.node, visitor);
-  } else if (node instanceof YamlNode) {
-    visitYaml(node.node, key, node.node, visitor);
-  }
 }

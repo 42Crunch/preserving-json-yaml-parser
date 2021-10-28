@@ -1,7 +1,7 @@
-import { parse, simpleClone, stringify } from "../src";
+import { parseJson, simpleClone, stringify } from "../src";
 import { resolve } from "path";
 import { readFileSync } from "fs";
-import { assertNumberFormatNotCorrupted, parseToAst, parseToObject } from "./utils";
+import { parseToObject } from "./utils";
 
 describe("Basic clone functionality", () => {
   it("Test clone", async () => {
@@ -11,8 +11,7 @@ describe("Basic clone functionality", () => {
     const object = parseToObject(text, "json");
     expect(JSON.stringify(object)).toEqual(stringify(object));
 
-    const root = parseToAst(text, "json");
-    const object2 = parse(root);
+    const [object2] = parseJson(text);
     const object2Text = stringify(object2);
     assertNumberFormatNotCorrupted(object2Text);
 
@@ -25,3 +24,10 @@ describe("Basic clone functionality", () => {
     expect(object2Text).toEqual(object3Text);
   });
 });
+
+function assertNumberFormatNotCorrupted(text: string): void {
+  expect(text.indexOf("900719925474099665656") !== -1).toBeTruthy();
+  expect(text.indexOf("1.0") !== -1).toBeTruthy();
+  expect(text.indexOf("-1007199254740996656565643") !== -1).toBeTruthy();
+  expect(text.indexOf("66666677777788888899999") !== -1).toBeTruthy();
+}

@@ -4,7 +4,7 @@
 */
 
 import { Location, Visitor } from "../types";
-import { ExtendedNode } from "@xliic/openapi-ast-node";
+import { ExtendedNode } from "../json-parser";
 
 export function visitJson(
   parent: ExtendedNode,

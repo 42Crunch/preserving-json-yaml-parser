@@ -1,11 +1,8 @@
-import { parse, getLocation, findNodeAtOffset } from "../src";
-import { parseToAst } from "./utils";
+import { parseYaml, getLocation, findNodeAtOffset } from "../src";
 
 describe("Test YAML Location information and finding nodes by offset", () => {
   it("Location info for object", async () => {
-    const yaml = "a: b";
-    const node = parseToAst(yaml, "yaml");
-    const object = parse(node);
+    const [object] = parseYaml("a: b");
 
     expect(getLocation(object, "a")).toEqual({
       key: {
@@ -20,9 +17,7 @@ describe("Test YAML Location information and finding nodes by offset", () => {
   });
 
   it("Location info for array", async () => {
-    const yaml = "[1, 2, 3]";
-    const node = parseToAst(yaml, "yaml");
-    const object = parse(node);
+    const [object] = parseYaml("[1, 2, 3]");
 
     expect(getLocation(object, 0)).toEqual({
       key: undefined,
@@ -34,9 +29,7 @@ describe("Test YAML Location information and finding nodes by offset", () => {
   });
 
   it("Location info for array", async () => {
-    const yaml = "[1, 2, 3]";
-    const node = parseToAst(yaml, "yaml");
-    const object = parse(node);
+    const [object] = parseYaml("[1, 2, 3]");
 
     expect(findNodeAtOffset(object, 1)[0]).toEqual(1);
     expect(findNodeAtOffset(object, 4)[0]).toEqual(2);
