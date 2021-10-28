@@ -8,5 +8,21 @@ export interface Visitor {
   onObjectEnd: () => void;
   onArrayStart: (parent: any, key: string | number, value: any) => void;
   onArrayEnd: () => void;
-  onValue: (parent: any, key: string | number, value: any, text: string | undefined) => void;
+  onValue: (
+    parent: any,
+    key: string | number,
+    value: any,
+    text: string | undefined,
+    location: Location | undefined
+  ) => void;
+}
+
+export interface Location {
+  key?: Range;
+  value: Range;
+}
+
+export interface Range {
+  start: number;
+  end: number;
 }

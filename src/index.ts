@@ -6,5 +6,6 @@
 import { simpleClone } from "./clone";
 import { parse } from "./parse";
 import { stringify } from "./stringify";
+import { getPreservedLocation as getLocation } from "./preserve";
 
-export { parse, stringify, simpleClone };
+export { parse, stringify, simpleClone, getLocation };

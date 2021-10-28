@@ -3,7 +3,7 @@
  Licensed under the GNU Affero General Public License version 3. See LICENSE.txt in the project root for license information.
 */
 
-import { getPreservedValue } from "../preserve";
+import { getPreservedLocation, getPreservedValue } from "../preserve";
 import { Visitor } from "../types";
 
 export function visitObject(parent: any, key: number | string, node: any, visitor: Visitor): any {
@@ -21,7 +21,13 @@ export function visitObject(parent: any, key: number | string, node: any, visito
     });
     visitor.onArrayEnd();
   } else {
-    visitor.onValue(parent, key, node, getPreservedValue(parent, key));
+    visitor.onValue(
+      parent,
+      key,
+      node,
+      getPreservedValue(parent, key),
+      getPreservedLocation(parent, key)
+    );
   }
 }
 

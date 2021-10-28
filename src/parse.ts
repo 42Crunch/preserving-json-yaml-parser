@@ -5,10 +5,10 @@
 
 import { Node, YamlNode, JsonNode } from "@xliic/openapi-ast-node";
 
-import { Visitor } from "./types";
+import { Location, Visitor } from "./types";
 import { visitYaml } from "./visit/yaml";
 import { visitJson } from "./visit/json";
-import { setPreservedValue } from "./preserve";
+import { setPreservedLocation, setPreservedValue } from "./preserve";
 
 export function parse(root: Node): any {
   let container: any = {};
@@ -29,10 +29,19 @@ export function parse(root: Node): any {
     onArrayEnd: () => {
       container = stack.pop();
     },
-    onValue: (parent: any, key: string | number, value: any, raw: string | undefined) => {
+    onValue: (
+      parent: any,
+      key: string | number,
+      value: any,
+      raw: string | undefined,
+      location: Location | undefined
+    ) => {
       container[key] = value;
       if (typeof value === "number" && raw !== undefined) {
         setPreservedValue(container, key, raw);
+      }
+      if (location) {
+        setPreservedLocation(container, key, location);
       }
     },
   });
@@ -41,8 +50,8 @@ export function parse(root: Node): any {
 
 export function visit(node: Node, key: string, visitor: Visitor): any {
   if (node instanceof JsonNode) {
-    visitJson(undefined, key, node.node, visitor);
+    visitJson(node.node, key, node.node, visitor);
   } else if (node instanceof YamlNode) {
-    visitYaml(undefined, key, node.node, visitor);
+    visitYaml(node.node, key, node.node, visitor);
   }
 }
