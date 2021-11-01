@@ -21,7 +21,3 @@ function findNodeAtOffsetImpl(root: any, offset: number, path: Path): [any, Path
 
   return [root, path]; // root is a container if offset is not found
 }
-
-export function getJsonPathForNode(node: any): string {
-  return "";
-}

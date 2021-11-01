@@ -48,6 +48,8 @@ export function visitYaml(
     });
     visitor.onArrayEnd();
   } else if (node.kind === Kind.ANCHOR_REF) {
+    // TODO figure out what to do with location data,
+    // perhaps location data should not be saved in this case
     visitYaml(parent, key, (<YAMLAnchorReference>node).value, visitor);
   } else if (node.kind === Kind.MAPPING) {
     // this should not happen normally, but node.kind === Kind.MAPPING can be passed
