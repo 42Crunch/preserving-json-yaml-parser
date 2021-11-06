@@ -1,23 +1,50 @@
-import { Range, Path } from "./types";
-import { getPreservedLocation } from "./preserve";
+import { Range, Path, Location, Parsed } from "./types";
+import { getPreservedLocation, getPreservedRootRange } from "./preserve";
+import { parseJsonPointer } from "./jsonpointer";
 
 function inRange(range: Range, offset: number): boolean {
-  return offset >= range.start && offset < range.end;
+  return offset >= range.start && offset <= range.end;
 }
 
-export function findNodeAtOffset(root: any, offset: number): [any, Path] {
-  return findNodeAtOffsetImpl(root, offset, []);
+export function findNodeAtOffset(root: Parsed, offset: number): [any, Path, Location] {
+  const rootLocation: Location = { value: getPreservedRootRange(root)! };
+  return findNodeAtOffsetImpl(root, offset, [], rootLocation);
 }
 
-function findNodeAtOffsetImpl(root: any, offset: number, path: Path): [any, Path] {
+function findNodeAtOffsetImpl(
+  root: any,
+  offset: number,
+  path: Path,
+  location: Location
+): [any, Path, Location] {
   const iterable = Array.isArray(root) ? root.keys() : Object.keys(root);
   for (const key of iterable) {
     const location = getPreservedLocation(root, key);
     if (location && inRange(location.value, offset)) {
       path.push(key);
-      return findNodeAtOffsetImpl(root[key], offset, path);
+      return findNodeAtOffsetImpl(root[key], offset, path, location);
     }
   }
 
-  return [root, path]; // root is a container if offset is not found
+  return [root, path, location]; // root is a container if offset is not found
+}
+
+export function findLocationForPath(root: Parsed, path: Path): Location | undefined {
+  let current = root;
+  let i = 0;
+  while (i < path.length - 1 && current) {
+    current = current[path[i]];
+    i++;
+  }
+
+  if (current) {
+    return getPreservedLocation(current, path[i]);
+  }
+}
+
+export function findLocationForJsonPointer(
+  root: Parsed,
+  jsonPointer: string
+): Location | undefined {
+  return findLocationForPath(root, parseJsonPointer(jsonPointer));
 }

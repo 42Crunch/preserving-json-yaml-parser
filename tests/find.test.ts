@@ -14,13 +14,14 @@ function loadYaml(filename: string) {
 
 describe("Basic tests for find()", () => {
   it("test find() in JSON file", async () => {
-    const [root] = loadYaml("xkcd.json");
+    const [root] = loadJson("xkcd.json");
     expect(find(root, "/swagger")).toEqual("2.0");
     expect(find(root, "/host")).toEqual("xkcd.com");
     expect(find(root, "/info/title")).toEqual("XKCD");
     expect(find(root, "/paths/~1info.0.json/get/description")).toEqual(
       "Fetch current comic and metadata.\n"
     );
+    expect(find(root, "")).toEqual(root);
   });
 
   it("test find() in YAML file", async () => {
@@ -31,5 +32,7 @@ describe("Basic tests for find()", () => {
     expect(find(root, "/paths/~1info.0.json/get/description")).toEqual(
       "Fetch current comic and metadata.\n"
     );
+    // "" JSON Pointer points to a root
+    expect(find(root, "")).toEqual(root);
   });
 });

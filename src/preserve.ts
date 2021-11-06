@@ -3,16 +3,18 @@
  Licensed under the GNU Affero General Public License version 3. See LICENSE.txt in the project root for license information.
 */
 
-import { Location } from "./types";
+import {
+  Location,
+  Range,
+  preserveRootRangeKey,
+  preserveFormattingKey,
+  preserveLocationKey,
+  Parsed,
+  Container,
+} from "./types";
 
-const preserveFormattingKey = Symbol("preserve-formatting");
-const preserveLocationKey = Symbol("preserve-location");
-const preserveSlotKey = Symbol("preserve-parent");
-
-export function getPreservedValue(container: any, key: string | number): string | undefined {
-  if (container && container[preserveFormattingKey]) {
-    return container[preserveFormattingKey][key];
-  }
+export function getPreservedValue(container: Container, key: string | number): string | undefined {
+  return container?.[preserveFormattingKey]?.[key];
 }
 
 export function setPreservedValue(container: any, key: string | number, value: string): void {
@@ -22,10 +24,11 @@ export function setPreservedValue(container: any, key: string | number, value: s
   container[preserveFormattingKey][key] = value;
 }
 
-export function getPreservedLocation(container: any, key: string | number): Location | undefined {
-  if (container && container[preserveLocationKey]) {
-    return container[preserveLocationKey][key];
-  }
+export function getPreservedLocation(
+  container: Container,
+  key: string | number
+): Location | undefined {
+  return container?.[preserveLocationKey]?.[key];
 }
 
 export function setPreservedLocation(
@@ -37,6 +40,14 @@ export function setPreservedLocation(
     Object.defineProperty(container, preserveLocationKey, { enumerable: false, value: {} });
   }
   container[preserveLocationKey][key] = location;
+}
+
+export function getPreservedRootRange(container: Parsed): Range {
+  return container[preserveRootRangeKey];
+}
+
+export function setPreservedRootRange(container: any, range: Range): void {
+  Object.defineProperty(container, preserveRootRangeKey, { enumerable: false, value: range });
 }
 
 export function copyPreservedValues(src: any, dest: any) {

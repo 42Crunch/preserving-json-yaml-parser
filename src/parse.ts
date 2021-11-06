@@ -3,10 +3,15 @@
  Licensed under the GNU Affero General Public License version 3. See LICENSE.txt in the project root for license information.
 */
 
-import { Location, Visitor } from "./types";
+import { Location, Parsed, Visitor } from "./types";
 import { visitYaml } from "./visit/yaml";
 import { visitJson } from "./visit/json";
-import { setPreservedLocation, setPreservedValue } from "./preserve";
+import {
+  getPreservedLocation,
+  setPreservedLocation,
+  setPreservedRootRange,
+  setPreservedValue,
+} from "./preserve";
 
 import { ExtendedError, ExtendedErrorCode, parseTree } from "./json-parser";
 
@@ -29,7 +34,7 @@ function extendedErrorToMessage(error: ExtendedError) {
 
 export function parseJson(
   text: string
-): [any, { message: string; offset: number; length: number }[]] {
+): [Parsed | undefined, { message: string; offset: number; length: number }[]] {
   const parseErrors: json.ParseError[] = [];
 
   const node = parseTree(text, parseErrors, {
@@ -55,7 +60,7 @@ export function parseJson(
 export function parseYaml(
   text: string,
   customTags?: { [tag: string]: "scalar" | "sequence" | "mapping" }
-): [any, { message: string; offset: number }[]] {
+): [Parsed | undefined, { message: string; offset: number }[]] {
   const documents: any = [];
   yaml.loadAll(
     text,
@@ -66,7 +71,7 @@ export function parseYaml(
   );
 
   if (documents.length !== 1) {
-    return [null, []];
+    return [undefined, []];
   }
 
   const normalizedErrors = documents[0].errors.map((error: any) => ({
@@ -94,7 +99,7 @@ function createSchema(
   return Schema.create(DEFAULT_SAFE_SCHEMA, types);
 }
 
-function runvisitor(visit: any, root: any) {
+function runvisitor(visit: any, root: any): Parsed {
   let container: any = {};
   const stack: any[] = [container];
 
@@ -145,5 +150,7 @@ function runvisitor(visit: any, root: any) {
       }
     },
   });
+  const range = getPreservedLocation(stack[0], "fakeroot")?.value;
+  setPreservedRootRange(stack[0].fakeroot, range!);
   return stack[0].fakeroot;
 }

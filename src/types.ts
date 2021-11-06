@@ -27,6 +27,12 @@ export interface Visitor {
   ) => void;
 }
 
+export interface ParserOptions {
+  yaml?: {
+    customTags?: { [tag: string]: "scalar" | "sequence" | "mapping" };
+  };
+}
+
 export interface Location {
   key?: Range;
   value: Range;
@@ -39,3 +45,23 @@ export interface Range {
 
 export type Segment = string | number;
 export type Path = Segment[];
+
+export const preserveRootRangeKey: unique symbol = Symbol("preserve-root-location");
+export const preserveFormattingKey: unique symbol = Symbol("preserve-formatting");
+export const preserveLocationKey: unique symbol = Symbol("preserve-location");
+
+export interface Parsed {
+  [key: string | number]: any;
+  [preserveRootRangeKey]: Range;
+}
+
+export interface Container {
+  [key: string | number]: any;
+
+  [preserveLocationKey]?: {
+    [key: string | number]: Location;
+  };
+  [preserveFormattingKey]?: {
+    [key: string | number]: string;
+  };
+}

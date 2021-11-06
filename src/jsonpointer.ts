@@ -58,6 +58,6 @@ export function findByPath(root: any, path: Path): any | undefined {
   return current;
 }
 
-export function find(root: any, jsonPath: string): any | undefined {
-  return findByPath(root, parseJsonPointer(jsonPath));
+export function find(root: any, jsonPointer: string): any | undefined {
+  return findByPath(root, parseJsonPointer(jsonPointer));
 }
