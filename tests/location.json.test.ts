@@ -1,3 +1,4 @@
+import outdent from "outdent";
 import { parseJson, getLocation, getRootRange, findNodeAtOffset } from "../src";
 
 describe("Test JSON Location information and finding nodes by offset", () => {
@@ -72,5 +73,20 @@ describe("Test JSON Location information and finding nodes by offset", () => {
 
     expect(found).toEqual("b");
     expect(path).toEqual([0, "a"]);
+  });
+
+  it("test for the issue where the key location was mssing from object values", async () => {
+    const text = outdent`{
+      "info": {
+        "version": "1.0.0",
+        "title": "Swagger Petstore",
+        "license": {
+          "name": "MIT"
+        }
+      }`;
+
+    const [object] = parseJson(text);
+    const location = getLocation(object!.info, "license");
+    expect(location!.key).toBeDefined();
   });
 });

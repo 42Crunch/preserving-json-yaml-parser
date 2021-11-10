@@ -35,6 +35,10 @@ export function visitYaml(
   }
 
   const location: Location = { value: { start: node.startPosition, end: node.endPosition } };
+  if (parent.kind === Kind.MAPPING) {
+    location.key = { start: parent.key.startPosition, end: parent.key.endPosition };
+  }
+
   if (node.kind === Kind.MAP) {
     visitor.onObjectStart(parent, key, node, location);
     for (const mapping of (<YAMLMapping>node).mappings) {
@@ -58,9 +62,6 @@ export function visitYaml(
   } else if (node.kind === Kind.SCALAR) {
     const [type, value] = parseYamlScalar(<YAMLScalar>node);
     const text = reserializeYamlValue(type, node.value, value);
-    if (parent.kind === Kind.MAPPING) {
-      location.key = { start: parent.key.startPosition, end: parent.key.endPosition };
-    }
     visitor.onValue(parent, key, value, text, location);
   }
 }

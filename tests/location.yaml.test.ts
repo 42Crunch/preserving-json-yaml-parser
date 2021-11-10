@@ -1,3 +1,4 @@
+import outdent from "outdent";
 import { parseYaml, getLocation, findNodeAtOffset, getRootRange } from "../src";
 
 describe("Test YAML Location information and finding nodes by offset", () => {
@@ -48,5 +49,19 @@ describe("Test YAML Location information and finding nodes by offset", () => {
     expect(findNodeAtOffset(object!, 1)[0]).toEqual(1);
     expect(findNodeAtOffset(object!, 4)[0]).toEqual(2);
     expect(findNodeAtOffset(object!, 7)[0]).toEqual(3);
+  });
+
+  it("test for the issue where the key location was mssing from object values", async () => {
+    const text = outdent`
+      info:
+        version: "1.0.0"
+        title: "Swagger Petstore"
+        license:
+          name: "MIT"
+      `;
+
+    const [object] = parseYaml(text);
+    const location = getLocation(object!.info, "license");
+    expect(location!.key).toBeDefined();
   });
 });

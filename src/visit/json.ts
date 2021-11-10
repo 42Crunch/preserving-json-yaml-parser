@@ -13,6 +13,10 @@ export function visitJson(
   visitor: Visitor
 ): any {
   const location: Location = { value: { start: node.offset, end: node.offset + node.length } };
+  if (parent.type === "property") {
+    const key = parent.children![0];
+    location.key = { start: key.offset, end: key.offset + key.length };
+  }
   if (node.type === "object") {
     visitor.onObjectStart(parent, key, node, location);
     for (const property of node.children!) {
@@ -27,10 +31,6 @@ export function visitJson(
     });
     visitor.onArrayEnd();
   } else {
-    if (parent.type === "property") {
-      const key = parent.children![0];
-      location.key = { start: key.offset, end: key.offset + key.length };
-    }
     visitor.onValue(parent, key, node.value, node.rawValue!, location);
   }
 }
