@@ -50,7 +50,7 @@ export function findByPath(root: any, path: Path): any | undefined {
   let current = root;
   for (const name of path) {
     current = current[name];
-    if (!current) {
+    if (current === undefined) {
       return undefined;
     }
   }

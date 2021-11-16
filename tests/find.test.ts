@@ -35,4 +35,19 @@ describe("Basic tests for find()", () => {
     // "" JSON Pointer points to a root
     expect(find(root, "")).toEqual(root);
   });
+
+  it("checks falsy values, empty string", async () => {
+    const [root] = parseJson('{"/name": {"get": {"description": ""}}}');
+    expect(find(root, "/~1name/get/description")).toEqual("");
+  });
+
+  it("checks falsy values, null", async () => {
+    const [root] = parseJson('{"/name": {"get": {"description": null}}}');
+    expect(find(root, "/~1name/get/description")).toEqual(null);
+  });
+
+  it("checks falsy values, zero", async () => {
+    const [root] = parseJson('{"/name": {"get": {"description": 0}}}');
+    expect(find(root, "/~1name/get/description")).toEqual(0);
+  });
 });
