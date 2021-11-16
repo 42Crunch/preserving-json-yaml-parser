@@ -49,8 +49,19 @@ export function parseJsonPointer(pointer: string): Path {
 export function findByPath(root: any, path: Path): any | undefined {
   let current = root;
   for (const name of path) {
-    current = current[name];
-    if (current === undefined) {
+    if (typeof current === "object" && current !== null) {
+      if (Array.isArray(current)) {
+        const index = typeof name === "string" ? parseInt(name, 10) : name;
+        if (isNaN(index)) {
+          return undefined;
+        }
+        current = current[index];
+      } else if (current.hasOwnProperty(name)) {
+        current = current[name];
+      } else {
+        return undefined;
+      }
+    } else {
       return undefined;
     }
   }

@@ -50,4 +50,24 @@ describe("Basic tests for find()", () => {
     const [root] = parseJson('{"/name": {"get": {"description": 0}}}');
     expect(find(root, "/~1name/get/description")).toEqual(0);
   });
+
+  it("checks built in properties, length", async () => {
+    const [root] = parseJson('{"/name": {"get": {"description": ""}}}');
+    expect(find(root, "/~1name/get/description/length")).toEqual(undefined);
+  });
+
+  it("checks built in properties, length of array", async () => {
+    const [root] = parseJson('{"/name": {"get": {"description": []}}}');
+    expect(find(root, "/~1name/get/description/length")).toEqual(undefined);
+  });
+
+  it("checks built in properties, __proto_ of object", async () => {
+    const [root] = parseJson('{"/name": {"get": {"description": {}}}}');
+    expect(find(root, "/~1name/get/description/__proto__")).toEqual(undefined);
+  });
+
+  it("checks pointing into null value", async () => {
+    const [root] = parseJson('{"/name": {"get": {"description": null}}}');
+    expect(find(root, "/~1name/get/description/foo")).toEqual(undefined);
+  });
 });
