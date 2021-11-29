@@ -1,4 +1,6 @@
 import { stringify } from "../src";
+import { readFileSync } from "fs";
+import { resolve } from "path";
 
 describe("Basic stringify functionality", () => {
   it("Test stringify", async () => {
@@ -34,5 +36,44 @@ describe("Basic stringify functionality", () => {
   it("Should handle unicode", async () => {
     const value = { фуу: "бар\nбаз" };
     expect(stringify(value)).toEqual(JSON.stringify(value));
+  });
+
+  it("should format any json", async () => {
+    const value = { foo: "bar", baz: "brr", b: [1], bb: [1, 2], z: { foo: "bar" } };
+    const own = stringify(value, 2);
+    const json = JSON.stringify(value, null, 2);
+    expect(own).toEqual(json);
+  });
+
+  it("should format empty object", async () => {
+    const value = {};
+    const own = stringify(value, 2);
+    const json = JSON.stringify(value, null, 2);
+    expect(own).toEqual(json);
+  });
+
+  it("should format empty array", async () => {
+    const value: string[] = [];
+    const own = stringify(value, 2);
+    const json = JSON.stringify(value, null, 2);
+    expect(own).toEqual(json);
+  });
+
+  it("should format array with empty object", async () => {
+    const value: object[] = [{}];
+    const own = stringify(value, 2);
+    const json = JSON.stringify(value, null, 2);
+    expect(own).toEqual(json);
+  });
+
+  it("should format petstore-v3.json", async () => {
+    const value = JSON.parse(
+      readFileSync(resolve(__dirname, "petstore-v3.json"), { encoding: "utf8" })
+    );
+
+    const own = stringify(value, 2);
+    const json = JSON.stringify(value, null, 2);
+    //console.log(own);
+    expect(own).toEqual(json);
   });
 });

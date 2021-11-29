@@ -8,7 +8,7 @@ export function parseToObject(text: string, language: "json" | "yaml"): any {
       object = yaml.load(text);
     } else {
       const errors: json.ParseError[] = [];
-      const parsed = json.parse(text, errors, { allowTrailingComma: true });
+      const parsed = json.parse(text, errors, { allowTrailingComma: false });
       if (errors.length == 0) {
         object = parsed;
       }
