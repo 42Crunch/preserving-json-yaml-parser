@@ -83,6 +83,12 @@ describe("Basic functionality", () => {
     expect(errors.length).toEqual(2);
   });
 
+  it("should handle broken.json", async () => {
+    const text = readFileSync(resolve(__dirname, "broken.json"), { encoding: "utf8" });
+    const [parsed, errors] = parseJson(text);
+    expect(errors.length).toEqual(1);
+  });
+
   /*
   it("It should allow parsing of a sub-tree of AST in YAML", async () => {
     const root = parseToAst("foo:\n  bar: baz\nzoom: [1,2,3]", "yaml");

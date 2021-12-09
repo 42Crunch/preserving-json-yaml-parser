@@ -12,6 +12,10 @@ export function visitJson(
   node: ExtendedNode,
   visitor: Visitor
 ): any {
+  if (node === undefined) {
+    visitor.onValue(parent, key, null, undefined, { value: { start: 0, end: 0 } });
+    return;
+  }
   const location: Location = { value: { start: node.offset, end: node.offset + node.length } };
   if (parent.type === "property") {
     const key = parent.children![0];
