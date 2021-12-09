@@ -29,7 +29,7 @@ export function visitYaml(
   // TODO look into checking value before calling visitYaml() in previous
   // iteration and injecting a YAMLNode with proper offsets
 
-  if (node === null) {
+  if (node === null || node === undefined) {
     visitor.onValue(parent, key, null, undefined, { value: { start: 0, end: 0 } });
     return;
   }
