@@ -89,6 +89,16 @@ describe("Basic functionality", () => {
     expect(errors.length).toEqual(1);
   });
 
+  it("should return undefined when YAML parser parsing strings", async () => {
+    const [object] = parseYaml("foo");
+    expect(object).toEqual(undefined);
+  });
+
+  it("should return undefined when JSON parser parsing strings", async () => {
+    const [object] = parseJson("foo");
+    expect(object).toEqual(undefined);
+  });
+
   /*
   it("It should allow parsing of a sub-tree of AST in YAML", async () => {
     const root = parseToAst("foo:\n  bar: baz\nzoom: [1,2,3]", "yaml");

@@ -35,7 +35,7 @@ export function visitYaml(
   }
 
   const location: Location = { value: { start: node.startPosition, end: node.endPosition } };
-  if (parent.kind === Kind.MAPPING) {
+  if (parent && parent.kind === Kind.MAPPING) {
     location.key = { start: parent.key.startPosition, end: parent.key.endPosition };
   }
 

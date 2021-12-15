@@ -99,11 +99,11 @@ function createSchema(
   return Schema.create(DEFAULT_SAFE_SCHEMA, types);
 }
 
-function runvisitor(visit: any, root: any): Parsed {
+function runvisitor(visit: Function, root: any): Parsed | undefined {
   let container: any = {};
   const stack: any[] = [container];
 
-  visit(root, "fakeroot", root, {
+  visit(null, "fakeroot", root, {
     onObjectStart: (
       parent: any,
       key: string | number,
@@ -150,6 +150,11 @@ function runvisitor(visit: any, root: any): Parsed {
       }
     },
   });
+
+  if (typeof stack[0].fakeroot !== "object") {
+    return undefined;
+  }
+
   const range = getPreservedLocation(stack[0], "fakeroot")?.value;
   setPreservedRootRange(stack[0].fakeroot, range!);
   return stack[0].fakeroot;

@@ -17,7 +17,7 @@ export function visitJson(
     return;
   }
   const location: Location = { value: { start: node.offset, end: node.offset + node.length } };
-  if (parent.type === "property") {
+  if (parent && parent.type === "property") {
     const key = parent.children![0];
     location.key = { start: key.offset, end: key.offset + key.length };
   }
