@@ -64,4 +64,15 @@ describe("Test YAML Location information and finding nodes by offset", () => {
     const location = getLocation(object!.info, "license");
     expect(location!.key).toBeDefined();
   });
+
+  it("finds location for missing null value in object", async () => {
+    const [object] = parseYaml("foo:");
+    expect(findNodeAtOffset(object!, 3)[1]).toEqual(["foo"]);
+  });
+
+  it("finds location for missing null value in object, middle of yaml body", async () => {
+    const [object] = parseYaml("a: b\nc:\nd: e");
+    const [node, path] = findNodeAtOffset(object!, 6);
+    expect(path).toEqual(["c"]);
+  });
 });

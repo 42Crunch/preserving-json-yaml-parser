@@ -24,19 +24,14 @@ export function visitYaml(
   node: YAMLNode,
   visitor: Visitor
 ): any {
-  // this is a workaround for yaml which looks like this - foo:
-  // and equals to foo: null
-  // TODO look into checking value before calling visitYaml() in previous
+  const location = getLocation(parent, node);
+
+  // the case for YAML which looks like this ```foo:``` and is similar to ```foo: null```
+  // TODO maybe look into checking value before calling visitYaml() in previous
   // iteration and injecting a YAMLNode with proper offsets
-
-  if (node === null || node === undefined) {
-    visitor.onValue(parent, key, null, undefined, { value: { start: 0, end: 0 } });
+  if (node === undefined || node === null) {
+    visitor.onValue(parent, key, node, undefined, location);
     return;
-  }
-
-  const location: Location = { value: { start: node.startPosition, end: node.endPosition } };
-  if (parent && parent.kind === Kind.MAPPING) {
-    location.key = { start: parent.key.startPosition, end: parent.key.endPosition };
   }
 
   if (node.kind === Kind.MAP) {
@@ -79,6 +74,25 @@ function parseYamlScalar(node: YAMLScalar): [ScalarType, any] {
     return [type, null];
   } else {
     return [type, node.value];
+  }
+}
+
+function getLocation(parent: YAMLNode, node: YAMLNode): Location {
+  // key location is known for childen of MAPPING nodes
+  const key =
+    parent && parent.kind === Kind.MAPPING
+      ? { start: parent.key.startPosition, end: parent.key.endPosition }
+      : undefined;
+
+  if (node) {
+    // normal case, non-null node
+    return { key, value: { start: node.startPosition, end: node.endPosition } };
+  } else if (parent && parent.kind === Kind.MAPPING) {
+    // for null nodes with known parent of type MAPPING
+    // value location is a zero-width space after the end of the key
+    return { key, value: { start: parent.key.endPosition, end: parent.key.endPosition } };
+  } else {
+    return { key, value: { start: 0, end: 0 } };
   }
 }
 

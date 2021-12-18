@@ -17,12 +17,17 @@ function findNodeAtOffsetImpl(
   path: Path,
   location: Location
 ): [any, Path, Location] {
-  const iterable = Array.isArray(root) ? root.keys() : Object.keys(root);
-  for (const key of iterable) {
+  const keys = Array.isArray(root) ? root.keys() : Object.keys(root);
+  for (const key of keys) {
     const location = getPreservedLocation(root, key);
     if (location && inRange(location.value, offset)) {
+      const value = root[key];
       path.push(key);
-      return findNodeAtOffsetImpl(root[key], offset, path, location);
+      if (value !== null && typeof value === "object") {
+        return findNodeAtOffsetImpl(value, offset, path, location);
+      } else {
+        return [value, path, location];
+      }
     }
   }
 
