@@ -51,7 +51,6 @@ export const preserveFormattingKey: unique symbol = Symbol("preserve-formatting"
 export const preserveLocationKey: unique symbol = Symbol("preserve-location");
 
 export interface Parsed {
-  [key: string | number]: any;
   [preserveRootRangeKey]: Range;
 }
 

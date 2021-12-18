@@ -61,7 +61,7 @@ describe("Test YAML Location information and finding nodes by offset", () => {
       `;
 
     const [object] = parseYaml(text);
-    const location = getLocation(object!.info, "license");
+    const location = getLocation(object["info"], "license");
     expect(location!.key).toBeDefined();
   });
 

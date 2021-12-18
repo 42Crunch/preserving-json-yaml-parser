@@ -52,29 +52,30 @@ describe("Basic functionality", () => {
 
   it("YAML null value", async () => {
     const [object] = parseYaml("one: null\ntwo: ~\nthree:");
-    expect(object?.one).toEqual(null);
-    expect(object?.two).toEqual(null);
-    expect(object?.three).toEqual(null);
+    //@ts-ignore
+    expect(object["one"]).toEqual(null);
+    expect(object["two"]).toEqual(null);
+    expect(object["three"]).toEqual(null);
   });
 
   it("JSON null value", async () => {
     const [object] = parseJson('{"one":null}');
-    expect(object?.one).toEqual(null);
+    expect(object["one"]).toEqual(null);
   });
 
   it("YAML integer leading zeroes", async () => {
     const [object] = parseYaml("agent: 007");
-    expect(object?.agent).toEqual(7);
+    expect(object["agent"]).toEqual(7);
   });
 
   it("YAML integer base 16", async () => {
     const [object] = parseYaml("agent: 0x20");
-    expect(object?.agent).toEqual(32);
+    expect(object["agent"]).toEqual(32);
   });
 
   it("YAML integer base 8", async () => {
     const [object] = parseYaml("agent: 0o40");
-    expect(object?.agent).toEqual(32);
+    expect(object["agent"]).toEqual(32);
   });
 
   it("should handle broken.yaml", async () => {

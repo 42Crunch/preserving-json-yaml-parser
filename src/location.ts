@@ -35,7 +35,7 @@ function findNodeAtOffsetImpl(
 }
 
 export function findLocationForPath(root: Parsed, path: Path): Location | undefined {
-  let current = root;
+  let current: any = root;
   let i = 0;
   while (i < path.length - 1 && current) {
     current = current[path[i]];
