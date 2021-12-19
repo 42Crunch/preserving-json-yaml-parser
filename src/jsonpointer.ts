@@ -3,7 +3,7 @@
  Licensed under the GNU Affero General Public License version 3. See LICENSE.txt in the project root for license information.
 */
 
-import { Path, Segment } from "./types";
+import { Parsed, Path, Segment } from "./types";
 
 const SLASHES = /\//g;
 const TILDES = /~/g;
@@ -46,8 +46,8 @@ export function parseJsonPointer(pointer: string): Path {
   return pointer.split("/").slice(1).map(untilde).map(decodeURIComponent);
 }
 
-export function findByPath(root: any, path: Path): any | undefined {
-  let current = root;
+export function findByPath(root: Parsed, path: Path): any | undefined {
+  let current: any = root;
   for (const name of path) {
     if (typeof current === "object" && current !== null) {
       if (Array.isArray(current)) {
@@ -69,6 +69,6 @@ export function findByPath(root: any, path: Path): any | undefined {
   return current;
 }
 
-export function find(root: any, jsonPointer: string): any | undefined {
+export function find(root: Parsed, jsonPointer: string): any | undefined {
   return findByPath(root, parseJsonPointer(jsonPointer));
 }
