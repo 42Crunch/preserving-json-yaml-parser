@@ -1,5 +1,11 @@
 import outdent from "outdent";
-import { parseYaml, getLocation, findNodeAtOffset, getRootRange } from "../src";
+import {
+  parseYaml,
+  getLocation,
+  findNodeAtOffset,
+  getRootRange,
+  findLocationForJsonPointer,
+} from "../src";
 
 describe("Test YAML Location information and finding nodes by offset", () => {
   it("Location info for object", async () => {
@@ -74,5 +80,13 @@ describe("Test YAML Location information and finding nodes by offset", () => {
     const [object] = parseYaml("a: b\nc:\nd: e");
     const [node, path] = findNodeAtOffset(object!, 6);
     expect(path).toEqual(["c"]);
+  });
+
+  it("finds location for missing null value in object, middle of yaml body", async () => {
+    const [object] = parseYaml("a: b\nc:\nd: e");
+    const location1 = findLocationForJsonPointer(object, "");
+    const location2 = findLocationForJsonPointer(object, "/a");
+    expect(location1).toEqual({ value: { end: 12, start: 0 } });
+    expect(location2).toEqual({ key: { end: 1, start: 0 }, value: { end: 4, start: 3 } });
   });
 });

@@ -1,5 +1,11 @@
 import outdent from "outdent";
-import { parseJson, getLocation, getRootRange, findNodeAtOffset } from "../src";
+import {
+  parseJson,
+  getLocation,
+  getRootRange,
+  findNodeAtOffset,
+  findLocationForJsonPointer,
+} from "../src";
 
 describe("Test JSON Location information and finding nodes by offset", () => {
   it("Location info for object", async () => {
@@ -88,5 +94,13 @@ describe("Test JSON Location information and finding nodes by offset", () => {
     const [object] = parseJson(text);
     const location = getLocation(object["info"], "license");
     expect(location!.key).toBeDefined();
+  });
+
+  it("tests findLocationForJsonPointer() ", async () => {
+    const [object] = parseJson('[{"a":"b"}]');
+    const location1 = findLocationForJsonPointer(object, "");
+    const location2 = findLocationForJsonPointer(object, "/0/a");
+    expect(location1).toEqual({ value: { end: 11, start: 0 } });
+    expect(location2).toEqual({ key: { end: 5, start: 2 }, value: { end: 9, start: 6 } });
   });
 });

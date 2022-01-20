@@ -35,6 +35,12 @@ function findNodeAtOffsetImpl(
 }
 
 export function findLocationForPath(root: Parsed, path: Path): Location | undefined {
+  if (path.length === 0) {
+    // special case "" pointing to the root
+    const range = getPreservedRootRange(root);
+    return { value: range };
+  }
+
   let current: any = root;
   let i = 0;
   while (i < path.length - 1 && current) {
