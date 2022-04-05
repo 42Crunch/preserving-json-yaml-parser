@@ -11,8 +11,8 @@ import {
   getPreservedRootRange as getRootRange,
 } from "./preserve";
 import { findLocationForJsonPointer, findNodeAtOffset } from "./location";
-import { find, joinJsonPointer, parseJsonPointer } from "./jsonpointer";
-import { Location, Range, ParserOptions, Path, Parsed } from "./types";
+import { find, joinJsonPointer, parseJsonPointer, findByPath } from "./jsonpointer";
+import { Location, Range, ParserOptions, Path, Parsed, Container } from "./types";
 
 function parse(
   text: string,
@@ -33,11 +33,13 @@ export {
   findNodeAtOffset,
   find,
   findLocationForJsonPointer,
+  findByPath,
   Parsed,
   Path,
   Location,
   Range,
   ParserOptions,
+  Container,
   joinJsonPointer,
   parseJsonPointer,
 };
