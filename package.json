@@ -1,6 +1,6 @@
 {
   "name": "@xliic/preserving-json-yaml-parser",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "description": "YAML/JSON parser and serializer that preserves formatting of the original numerical values (i.e. 1.0 vs 1) and handles integers bigger than MAX_SAFE_INTEGER",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

@@ -10,7 +10,7 @@ import {
   getPreservedLocation as getLocation,
   getPreservedRootRange as getRootRange,
 } from "./preserve";
-import { findLocationForJsonPointer, findNodeAtOffset } from "./location";
+import { findLocationForJsonPointer, findLocationForPath, findNodeAtOffset } from "./location";
 import { find, joinJsonPointer, parseJsonPointer, findByPath } from "./jsonpointer";
 import { Location, Range, ParserOptions, Path, Parsed, Container } from "./types";
 
@@ -34,6 +34,7 @@ export {
   find,
   findLocationForJsonPointer,
   findByPath,
+  findLocationForPath,
   Parsed,
   Path,
   Location,
