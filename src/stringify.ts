@@ -4,9 +4,95 @@
 */
 
 import { visitObject } from "./visit/object";
+import { safeDump } from "yaml-language-server-parser";
+import { getPreservedValue } from "./preserve";
 
 export function stringify(value: any, indent: number = 0): string {
   return indent === 0 ? stringify_plain(value) : stringify_format(value, indent);
+}
+
+export function stringifyYaml(value: any): string {
+  if (!value) {
+    return safeDump(value, {});
+  }
+
+  let indent: string = '';
+  const handlers: { [key: string]: (parent: any, key: number | string, node: any, isInArray: boolean, isRootNode: boolean) => any } = {
+    undefined: () => 'null',
+    null: () => 'null',
+    number: (parent: any, key: number | string) => getPreservedValue(parent, key),
+    boolean: (parent: any, key: number | string, node: any) => (!!node ? 'true' : 'false'),
+    string: (parent: any, key: number | string, node: any) => JSON.stringify(node),
+    object: (parent: any, key: number | string, node: any, isInArray: boolean = false, isRootNode: boolean = false): string => {
+      let result: string = '';
+      const objectKeys: string[] = Object.keys(node);
+
+      // check if an object is not empty
+      if (!objectKeys.length) {
+        result += '{}';
+        return result;
+      }
+
+      if (!isRootNode) {
+        indent = replaceIdent(indent);
+      }
+
+      objectKeys.forEach((itemKey: string, index: number) => {
+        const objectValue = node[itemKey];
+
+        // check if a value exists
+        if (typeof objectValue === 'undefined') {
+          return;
+        }
+
+        let valueHandler = handlers[typeof objectValue];
+
+        if (Array.isArray(objectValue)) {
+          valueHandler = handlers['array'];
+        }
+
+        // If there is no handler
+        if (!valueHandler) {
+          throw new Error(`Cannot handle the value: ${typeof objectValue}`);
+        }
+
+        if (!isInArray || index !== 0) {
+          result += '\n' + indent;
+        }
+
+        result += itemKey + (typeof objectValue === "object" ? ':' : ': ') + valueHandler(node, itemKey, objectValue, false, false);
+      });
+
+      indent = clearIdent(indent);
+      return result;
+    },
+    array: (parent: any, key: number | string, node: any, isInArray: boolean = false, isRootNode: boolean = false) => {
+      let result = '';
+
+      if (!node.length) {
+        result += '[]';
+        return result;
+      }
+
+      indent = replaceIdent(indent);
+
+      node.forEach((item: any, index: number) => {
+        const valueHandler = handlers[typeof item];
+
+        if (!valueHandler) {
+          throw new Error(`Cannot handle the value: ${typeof item}`);
+        }
+
+        result += '\n' + indent + '- ' + valueHandler(node, index, item, true, false);
+      });
+
+      indent = clearIdent(indent);
+      return result;
+    }
+  };
+
+  const result = handlers[typeof(value)](undefined, "", value, false, true) + '\n';
+  return result.split('\n').slice(1).join('\n');
 }
 
 function stringify_plain(value: any): string {
@@ -122,4 +208,17 @@ function keyed(key: string | number, value: string, tight: boolean = true) {
 
 function padding(indent: number, level: number): string {
   return " ".repeat(indent * level);
+}
+
+function addIdent(): string {
+  return padding(2, 1)
+}
+
+function clearIdent(indent: string): string {
+  const regexp = new RegExp(addIdent());
+  return indent.replace(regexp, '');
+}
+
+function replaceIdent(indent: string): string {
+  return indent.replace(/$/, addIdent());
 }

@@ -1,4 +1,4 @@
-import { stringify } from "../src";
+import { parseJson, stringify, stringifyYaml } from "../src";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 
@@ -76,4 +76,14 @@ describe("Basic stringify functionality", () => {
     //console.log(own);
     expect(own).toEqual(json);
   });
+
+  // TODO This test won't pass due to using of JSON.stringify.
+  // We need to parse string values manually
+  // it("should convert boundary.json to yaml", async () => {
+  //   const jsonText = readFileSync(resolve(__dirname, "boundary.json"), { encoding: "utf8" });
+  //   const yamlText = readFileSync(resolve(__dirname, "boundary.yaml"), { encoding: "utf8" });
+  //   const parcedJson = parseJson(jsonText);
+  //   const stringifiedYaml = stringifyYaml(parcedJson[0]);
+  //   expect(stringifiedYaml).toEqual(yamlText);
+  // });
 });
