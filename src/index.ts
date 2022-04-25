@@ -5,7 +5,7 @@
 
 import { simpleClone } from "./clone";
 import { parseJson, parseYaml } from "./parse";
-import { stringify } from "./stringify";
+import { stringify, stringifyYaml } from "./stringify";
 import {
   getPreservedLocation as getLocation,
   getPreservedRootRange as getRootRange,
@@ -27,6 +27,7 @@ export {
   parseJson,
   parseYaml,
   stringify,
+  stringifyYaml,
   simpleClone,
   getLocation,
   getRootRange,
