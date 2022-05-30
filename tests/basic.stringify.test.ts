@@ -94,5 +94,5 @@ describe("Basic stringify functionality", () => {
     const formattedJson = JSON.stringify(value, null, 2);
     expect(formattedOwn).toEqual(formattedJson);
     await new Promise((resolve) => setTimeout(resolve, 1));
-  }, 1000);
+  }, 2000);
 });
