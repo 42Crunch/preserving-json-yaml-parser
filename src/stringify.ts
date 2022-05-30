@@ -15,38 +15,40 @@ function stringify_plain(value: any): string {
     return JSON.stringify(value);
   }
 
-  let result: string = "";
+  const result: string[] = [];
 
   visitObject(undefined, "fakeroot", value, {
     onObjectStart: (parent: any, key: string | number, value: any) => {
-      result += keyed(key, "{");
+      result.push(keyed(key, "{"));
     },
     onObjectEnd: () => {
-      if (result.endsWith(",")) {
-        result = result.slice(0, -1);
+      if (result[result.length - 1].endsWith(",")) {
+        trimLastElement(result, 1);
       }
-      result += "},";
+      result.push("},");
     },
     onArrayStart: (parent: any, key: string | number, value: any) => {
-      result += keyed(key, "[");
+      result.push(keyed(key, "["));
     },
     onArrayEnd: () => {
-      if (result.endsWith(",")) {
-        result = result.slice(0, -1);
+      if (result[result.length - 1].endsWith(",")) {
+        trimLastElement(result, 1);
       }
-      result += "],";
+      result.push("],");
     },
     onValue: (parent: any, key: string | number, value: any, preserved: string | undefined) => {
       if (preserved !== undefined) {
-        result += keyed(key, preserved) + ",";
+        result.push(keyed(key, preserved) + ",");
       } else {
-        result += keyed(key, JSON.stringify(value)) + ",";
+        result.push(keyed(key, JSON.stringify(value)) + ",");
       }
     },
   });
 
   // trim "fakeroot": and trailing comma
-  return result.slice('"fakeroot":'.length, -1);
+  result[0] = result[0].slice('"fakeroot":'.length);
+  trimLastElement(result, 1);
+  return result.join("");
 }
 
 function stringify_format(value: any, indent: number): string {
@@ -55,13 +57,13 @@ function stringify_format(value: any, indent: number): string {
     return JSON.stringify(value);
   }
 
-  let result: string = "";
+  const result: string[] = [];
   let level: number = 0;
   const isEmpty: boolean[] = [true];
 
   visitObject(undefined, "fakeroot", value, {
     onObjectStart: (parent: any, key: string | number, value: any) => {
-      result += padding(indent, level) + keyed(key, "{\n", false);
+      result.push(padding(indent, level) + keyed(key, "{\n", false));
       // new object in the parent container, therefore it's not empty
       isEmpty[isEmpty.length - 1] = false;
       // this object is empty so far
@@ -72,16 +74,16 @@ function stringify_format(value: any, indent: number): string {
       level--;
       if (isEmpty.pop()) {
         // remove EOL to put closing brace on the same line, there is no comma to remove
-        result = result.slice(0, -1);
-        result += "},\n";
+        trimLastElement(result, 1);
+        result.push("},\n");
       } else {
         // remove comma and EOL
-        result = result.slice(0, -2);
-        result += "\n" + padding(indent, level) + "},\n";
+        trimLastElement(result, 2);
+        result.push("\n" + padding(indent, level) + "},\n");
       }
     },
     onArrayStart: (parent: any, key: string | number, value: any) => {
-      result += padding(indent, level) + keyed(key, "[\n", false);
+      result.push(padding(indent, level) + keyed(key, "[\n", false));
       // new array in the parent container, therefore it's not empty
       isEmpty[isEmpty.length - 1] = false;
       // this array is empty so far
@@ -92,27 +94,34 @@ function stringify_format(value: any, indent: number): string {
       level--;
       if (isEmpty.pop()) {
         // remove EOL to put closing brace on the same line, there is no comma to remove
-        result = result.slice(0, -1);
-        result += "],\n";
+        trimLastElement(result, 1);
+        result.push("],\n");
       } else {
         // remove comma and EOL
-        result = result.slice(0, -2);
-        result += "\n" + padding(indent, level) + "],\n";
+        trimLastElement(result, 2);
+        result.push("\n" + padding(indent, level) + "],\n");
       }
     },
     onValue: (parent: any, key: string | number, value: any, preserved: string | undefined) => {
       // mark current container as non-empty
       isEmpty[isEmpty.length - 1] = false;
       if (preserved !== undefined) {
-        result += padding(indent, level) + keyed(key, preserved, false) + ",\n";
+        result.push(padding(indent, level) + keyed(key, preserved, false) + ",\n");
       } else {
-        result += padding(indent, level) + keyed(key, JSON.stringify(value), false) + ",\n";
+        result.push(padding(indent, level) + keyed(key, JSON.stringify(value), false) + ",\n");
       }
     },
   });
 
   // trim "fakeroot": and trailing comma and EOL
-  return result.slice('"fakeroot": '.length, -2);
+  result[0] = result[0].slice('"fakeroot": '.length);
+  trimLastElement(result, 2);
+  return result.join("");
+}
+
+function trimLastElement(array: string[], chars: number): void {
+  const lastIndex = array.length - 1;
+  array[lastIndex] = array[lastIndex].slice(0, -chars);
 }
 
 function keyed(key: string | number, value: string, tight: boolean = true) {

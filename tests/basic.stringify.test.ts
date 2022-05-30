@@ -71,9 +71,28 @@ describe("Basic stringify functionality", () => {
       readFileSync(resolve(__dirname, "petstore-v3.json"), { encoding: "utf8" })
     );
 
-    const own = stringify(value, 2);
-    const json = JSON.stringify(value, null, 2);
-    //console.log(own);
+    const own = stringify(value);
+    const json = JSON.stringify(value);
     expect(own).toEqual(json);
+
+    const formattedOwn = stringify(value, 2);
+    const formattedJson = JSON.stringify(value, null, 2);
+    expect(formattedOwn).toEqual(formattedJson);
   });
+
+  it("should stringify large swagger-slot.json quickly", async () => {
+    const value = JSON.parse(
+      readFileSync(resolve(__dirname, "swagger-slot.json"), { encoding: "utf8" })
+    );
+
+    const own = stringify(value);
+    const json = JSON.stringify(value);
+    expect(own).toEqual(json);
+    await new Promise((resolve) => setTimeout(resolve, 1));
+
+    const formattedOwn = stringify(value, 2);
+    const formattedJson = JSON.stringify(value, null, 2);
+    expect(formattedOwn).toEqual(formattedJson);
+    await new Promise((resolve) => setTimeout(resolve, 1));
+  }, 1000);
 });
