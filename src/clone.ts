@@ -6,7 +6,7 @@
 import { visitObject } from "./visit/object";
 import { copyPreservedValues } from "./preserve";
 
-export function simpleClone<T>(orig: T): T {
+export function simpleClone<T>(orig: T, replacer?: (value: unknown) => unknown): T {
   let container: any = {};
   const stack: any[] = [container];
 
@@ -28,7 +28,7 @@ export function simpleClone<T>(orig: T): T {
       container = stack.pop();
     },
     onValue: (parent: any, key: string | number, value: any, preserved: string | undefined) => {
-      container[key] = value;
+      container[key] = replacer ? replacer(value) : value;
     },
   });
 
