@@ -67,7 +67,7 @@ describe("Test YAML Location information and finding nodes by offset", () => {
       `;
 
     const [object] = parseYaml(text);
-    const location = getLocation(object["info"], "license");
+    const location = getLocation(object!["info"], "license");
     expect(location!.key).toBeDefined();
   });
 
@@ -84,8 +84,8 @@ describe("Test YAML Location information and finding nodes by offset", () => {
 
   it("finds location for missing null value in object, middle of yaml body", async () => {
     const [object] = parseYaml("a: b\nc:\nd: e");
-    const location1 = findLocationForJsonPointer(object, "");
-    const location2 = findLocationForJsonPointer(object, "/a");
+    const location1 = findLocationForJsonPointer(object!, "");
+    const location2 = findLocationForJsonPointer(object!, "/a");
     expect(location1).toEqual({ value: { end: 12, start: 0 } });
     expect(location2).toEqual({ key: { end: 1, start: 0 }, value: { end: 4, start: 3 } });
   });
