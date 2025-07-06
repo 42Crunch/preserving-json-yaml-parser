@@ -12,14 +12,13 @@ import {
 } from "./preserve";
 import { findLocationForJsonPointer, findLocationForPath, findNodeAtOffset } from "./location";
 import { find, joinJsonPointer, parseJsonPointer, findByPath } from "./jsonpointer";
-import { Location, Range, ParserOptions, Path, Parsed, Container } from "./types";
+import { Location, Range, Path, Parsed, Container } from "./types";
 
 function parse(
   text: string,
-  languageId: string,
-  options: ParserOptions
+  languageId: string
 ): [Parsed | undefined, { message: string; offset: number; length?: number }[]] {
-  return languageId === "yaml" ? parseYaml(text, options?.yaml?.customTags) : parseJson(text);
+  return languageId === "yaml" ? parseYaml(text) : parseJson(text);
 }
 
 export {
@@ -39,7 +38,6 @@ export {
   Path,
   Location,
   Range,
-  ParserOptions,
   Container,
   joinJsonPointer,
   parseJsonPointer,

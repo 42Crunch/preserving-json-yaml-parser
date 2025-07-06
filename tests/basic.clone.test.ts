@@ -1,10 +1,12 @@
-import { parseJson, simpleClone, stringify } from "../src";
+import { describe, expect, test } from "vitest";
 import { resolve } from "path";
 import { readFileSync } from "fs";
+
+import { parseJson, simpleClone, stringify } from "../src";
 import { parseToObject } from "./utils";
 
 describe("Basic clone functionality", () => {
-  it("Test clone", async () => {
+  test("Test clone", async () => {
     const text = readFileSync(resolve(__dirname, "boundary.json"), { encoding: "utf8" });
     assertNumberFormatNotCorrupted(text);
 
