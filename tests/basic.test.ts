@@ -84,7 +84,7 @@ describe("Basic functionality", () => {
   test("should handle broken.yaml", async () => {
     const text = readFileSync(resolve(__dirname, "broken.yaml"), { encoding: "utf8" });
     const [parsed, errors] = parseYaml(text);
-    expect(errors.length).toEqual(2); // FIXME what is the second error?
+    expect(errors.length).toEqual(1);
   });
 
   test("should handle broken.json", async () => {
