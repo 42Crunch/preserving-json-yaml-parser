@@ -17,6 +17,7 @@ import { ExtendedError, ExtendedErrorCode, parseTree, ExtendedNode } from "./jso
 
 import * as json from "jsonc-parser";
 import * as yaml from "yaml";
+import { getCustomTags } from "./custom-tags";
 
 function extendedErrorToMessage(error: ExtendedError) {
   if (error.extendedError) {
@@ -54,9 +55,12 @@ export function parseJson(
 }
 
 export function parseYaml(
-  text: string
+  text: string,
+  customTags?: { [tag: string]: "scalar" | "sequence" | "mapping" }
 ): [Parsed | undefined, { message: string; offset: number }[]] {
-  const documents = yaml.parseAllDocuments(text);
+  const documents = yaml.parseAllDocuments(text, {
+    customTags: getCustomTags(customTags || {}),
+  });
 
   if (documents.length !== 1) {
     return [undefined, []];

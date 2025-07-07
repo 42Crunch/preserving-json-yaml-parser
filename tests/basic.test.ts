@@ -110,6 +110,23 @@ describe("Basic functionality", () => {
     expect("foo: ^[a-zA-Z0-9\\s(\\\\)',_.]*$\n").toEqual(yaml.dump(object));
   });
 
+  test("should support custom tags in YAML", async () => {
+    const [object, errors] = parseYaml("one: !custom foo", {
+      "!custom": "scalar",
+    });
+    expect(object).toEqual({
+      one: "foo",
+    });
+  });
+
+  test("should report an error in case of invalid custom tag usage", async () => {
+    const [object, errors] = parseYaml("one: !customSeq foo", {
+      "!customSeq": "sequence",
+    });
+    expect(errors.length).toEqual(1);
+    expect(errors[0].message.startsWith("Unexpected type for tag")).toBeTruthy();
+  });
+
   /*
   it("It should allow parsing of a sub-tree of AST in YAML", async () => {
     const root = parseToAst("foo:\n  bar: baz\nzoom: [1,2,3]", "yaml");

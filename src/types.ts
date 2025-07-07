@@ -27,6 +27,12 @@ export interface Visitor {
   ) => void;
 }
 
+export interface ParserOptions {
+  yaml?: {
+    customTags?: { [tag: string]: "scalar" | "sequence" | "mapping" };
+  };
+}
+
 export interface Location {
   key?: Range;
   value: Range;
