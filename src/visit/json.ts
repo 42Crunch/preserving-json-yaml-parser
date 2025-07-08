@@ -7,6 +7,7 @@ import { Location, Visitor } from "../types";
 import { ExtendedNode } from "../json-parser";
 
 export function visitJson(
+  document: undefined,
   parent: ExtendedNode,
   key: number | string,
   node: ExtendedNode,
@@ -25,13 +26,13 @@ export function visitJson(
     visitor.onObjectStart(parent, key, node, location);
     for (const property of node.children!) {
       const [key, value] = property.children!;
-      visitJson(property, key.value, value, visitor);
+      visitJson(undefined, property, key.value, value, visitor);
     }
     visitor.onObjectEnd();
   } else if (node.type === "array") {
     visitor.onArrayStart(parent, key, node, location);
     node.children!.forEach((value, index) => {
-      visitJson(node, index, value, visitor);
+      visitJson(undefined, node, index, value, visitor);
     });
     visitor.onArrayEnd();
   } else {

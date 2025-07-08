@@ -3,7 +3,7 @@
  Licensed under the GNU Affero General Public License version 3. See LICENSE.txt in the project root for license information.
 */
 
-import { Location, Parsed, Visitor } from "./types";
+import { Location, Parsed } from "./types";
 import { visitYaml } from "./visit/yaml";
 import { visitJson } from "./visit/json";
 import {
@@ -13,14 +13,11 @@ import {
   setPreservedValue,
 } from "./preserve";
 
-import { ExtendedError, ExtendedErrorCode, parseTree } from "./json-parser";
+import { ExtendedError, ExtendedErrorCode, parseTree, ExtendedNode } from "./json-parser";
 
 import * as json from "jsonc-parser";
-
-import * as yaml from "yaml-language-server-parser";
-import { Schema } from "yaml-language-server-parser/dist/src/schema";
-import { Type } from "yaml-language-server-parser/dist/src/type";
-import * as DEFAULT_SAFE_SCHEMA from "yaml-language-server-parser/dist/src/schema/default_safe";
+import * as yaml from "yaml";
+import { getCustomTags } from "./custom-tags";
 
 function extendedErrorToMessage(error: ExtendedError) {
   if (error.extendedError) {
@@ -50,7 +47,7 @@ export function parseJson(
   }));
 
   if (node) {
-    const parsed = runvisitor(visitJson, node);
+    const parsed = runvisitor(visitJson, undefined, node);
     return [parsed, normalizedErrors];
   }
 
@@ -61,49 +58,48 @@ export function parseYaml(
   text: string,
   customTags?: { [tag: string]: "scalar" | "sequence" | "mapping" }
 ): [Parsed | undefined, { message: string; offset: number }[]] {
-  const documents: any = [];
-  yaml.loadAll(
-    text,
-    (document) => {
-      documents.push(document);
-    },
-    { schema: createSchema(customTags) }
-  );
+  const documents = yaml.parseAllDocuments(text, {
+    customTags: getCustomTags(customTags || {}),
+  });
 
   if (documents.length !== 1) {
     return [undefined, []];
   }
 
-  const normalizedErrors = documents[0].errors.map((error: any) => ({
+  const document = documents[0];
+
+  const normalizedErrors = document.errors.map((error) => ({
     message: error.message,
-    offset: error.mark ? error.mark.position : 0,
+    offset: error.pos[0],
+    length: error.pos[1] - error.pos[0],
   }));
 
-  if (documents[0]) {
-    const parsed = runvisitor(visitYaml, documents[0]);
-    return [parsed, normalizedErrors];
-  }
+  yaml.visit(document, {
+    Alias(key, node) {
+      if (!node.resolve(document)) {
+        normalizedErrors.push({
+          message: `Alias "${key}" could not be resolved`,
+          offset: node.range![0],
+          length: node.range![1] - node.range![0],
+        });
+      }
+    },
+  });
 
-  return [undefined, normalizedErrors];
+  const parsed = runvisitor(visitYaml, document, document.contents as yaml.Node);
+
+  return [parsed, normalizedErrors];
 }
 
-function createSchema(
-  customTags: { [tag: string]: "scalar" | "sequence" | "mapping" } | undefined
-): Schema {
-  if (!customTags) {
-    return DEFAULT_SAFE_SCHEMA;
-  }
-
-  const types = Object.entries(customTags).map(([key, value]) => new Type(key, { kind: value }));
-
-  return Schema.create(DEFAULT_SAFE_SCHEMA, types);
-}
-
-function runvisitor(visit: Function, root: any): Parsed | undefined {
+function runvisitor(
+  visit: Function,
+  document: yaml.Document | undefined,
+  root: ExtendedNode | yaml.Node
+): Parsed | undefined {
   let container: any = {};
   const stack: any[] = [container];
 
-  visit(null, "fakeroot", root, {
+  visit(document, null, "fakeroot", root, {
     onObjectStart: (
       parent: any,
       key: string | number,

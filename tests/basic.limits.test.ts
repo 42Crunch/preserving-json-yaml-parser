@@ -1,10 +1,12 @@
+import { describe, expect, test } from "vitest";
 import { resolve } from "path";
 import { readFileSync } from "fs";
+
 import { parseJson, parseYaml, stringify } from "../src";
 import { parseToObject } from "./utils";
 
 describe("Basic numeric limits functionality", () => {
-  it("Test Json numeric limits", async () => {
+  test("Test Json numeric limits", async () => {
     const text = readFileSync(resolve(__dirname, "boundary.json"), { encoding: "utf8" });
     assertNumberFormatNotCorrupted(text);
 
@@ -18,7 +20,7 @@ describe("Basic numeric limits functionality", () => {
     expect(JSON.parse(object2Text)).toEqual(object);
   });
 
-  it("Test Yaml numeric limits", async () => {
+  test("Test Yaml numeric limits", async () => {
     const text = readFileSync(resolve(__dirname, "boundary.yaml"), { encoding: "utf8" });
     assertNumberFormatNotCorrupted(text);
 

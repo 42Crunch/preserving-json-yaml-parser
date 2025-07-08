@@ -146,7 +146,7 @@ export function parseTree(
         const keys = findDuplicateKeys(currentParent.children);
         for (const { offset, length } of keys) {
           errors.push({
-            error: 0,
+            error: 0 as any,
             extendedError: ExtendedErrorCode.DuplicateKey,
             offset,
             length,

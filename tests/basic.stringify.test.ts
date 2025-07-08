@@ -1,9 +1,11 @@
-import { stringify } from "../src";
+import { describe, expect, test } from "vitest";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 
+import { stringify } from "../src";
+
 describe("Basic stringify functionality", () => {
-  it("Test stringify", async () => {
+  test("Test stringify", async () => {
     expect(stringify(null)).toEqual(JSON.stringify(null));
     expect(stringify(undefined)).toEqual(JSON.stringify(undefined));
 
@@ -28,45 +30,45 @@ describe("Basic stringify functionality", () => {
     //expect(stringify(value4)).toEqual(JSON.stringify(value4));
   });
 
-  it("Should escape newlines in strings", async () => {
+  test("Should escape newlines in strings", async () => {
     const value = { foo: "bar\nbaz" };
     expect(stringify(value)).toEqual(JSON.stringify(value));
   });
 
-  it("Should handle unicode", async () => {
+  test("Should handle unicode", async () => {
     const value = { фуу: "бар\nбаз" };
     expect(stringify(value)).toEqual(JSON.stringify(value));
   });
 
-  it("should format any json", async () => {
+  test("should format any json", async () => {
     const value = { foo: "bar", baz: "brr", b: [1], bb: [1, 2], z: { foo: "bar" } };
     const own = stringify(value, 2);
     const json = JSON.stringify(value, null, 2);
     expect(own).toEqual(json);
   });
 
-  it("should format empty object", async () => {
+  test("should format empty object", async () => {
     const value = {};
     const own = stringify(value, 2);
     const json = JSON.stringify(value, null, 2);
     expect(own).toEqual(json);
   });
 
-  it("should format empty array", async () => {
+  test("should format empty array", async () => {
     const value: string[] = [];
     const own = stringify(value, 2);
     const json = JSON.stringify(value, null, 2);
     expect(own).toEqual(json);
   });
 
-  it("should format array with empty object", async () => {
+  test("should format array with empty object", async () => {
     const value: object[] = [{}];
     const own = stringify(value, 2);
     const json = JSON.stringify(value, null, 2);
     expect(own).toEqual(json);
   });
 
-  it("should format petstore-v3.json", async () => {
+  test("should format petstore-v3.json", async () => {
     const value = JSON.parse(
       readFileSync(resolve(__dirname, "petstore-v3.json"), { encoding: "utf8" })
     );
@@ -80,7 +82,7 @@ describe("Basic stringify functionality", () => {
     expect(formattedOwn).toEqual(formattedJson);
   });
 
-  it("should stringify large swagger-slot.json quickly", async () => {
+  test("should stringify large swagger-slot.json quickly", async () => {
     const value = JSON.parse(
       readFileSync(resolve(__dirname, "swagger-slot.json"), { encoding: "utf8" })
     );

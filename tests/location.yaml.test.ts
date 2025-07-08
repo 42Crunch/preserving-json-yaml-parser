@@ -1,4 +1,6 @@
+import { describe, expect, test } from "vitest";
 import outdent from "outdent";
+
 import {
   parseYaml,
   getLocation,
@@ -8,7 +10,7 @@ import {
 } from "../src";
 
 describe("Test YAML Location information and finding nodes by offset", () => {
-  it("Location info for object", async () => {
+  test("Location info for object", async () => {
     const [object] = parseYaml("a: b");
 
     expect(getLocation(object!, "a")).toEqual({
@@ -23,7 +25,7 @@ describe("Test YAML Location information and finding nodes by offset", () => {
     });
   });
 
-  it("Location info for array", async () => {
+  test("Location info for array", async () => {
     const [object] = parseYaml("[1, 2, 3]");
 
     expect(getLocation(object!, 0)).toEqual({
@@ -35,7 +37,7 @@ describe("Test YAML Location information and finding nodes by offset", () => {
     });
   });
 
-  it("tests getRootLocation() object", async () => {
+  test("tests getRootLocation() object", async () => {
     const [object] = parseYaml("a: b");
     expect(getRootRange(object!)).toEqual({
       start: 0,
@@ -49,7 +51,7 @@ describe("Test YAML Location information and finding nodes by offset", () => {
     expect(location).toEqual({ key: { start: 0, end: 1 }, value: { start: 3, end: 4 } });
   });
 
-  it("Location info for array", async () => {
+  test("Location info for array", async () => {
     const [object] = parseYaml("[1, 2, 3]");
 
     expect(findNodeAtOffset(object!, 1)[0]).toEqual(1);
@@ -57,7 +59,7 @@ describe("Test YAML Location information and finding nodes by offset", () => {
     expect(findNodeAtOffset(object!, 7)[0]).toEqual(3);
   });
 
-  it("test for the issue where the key location was mssing from object values", async () => {
+  test("test for the issue where the key location was mssing from object values", async () => {
     const text = outdent`
       info:
         version: "1.0.0"
@@ -71,18 +73,18 @@ describe("Test YAML Location information and finding nodes by offset", () => {
     expect(location!.key).toBeDefined();
   });
 
-  it("finds location for missing null value in object", async () => {
+  test("finds location for missing null value in object", async () => {
     const [object] = parseYaml("foo:");
-    expect(findNodeAtOffset(object!, 3)[1]).toEqual(["foo"]);
+    expect(findNodeAtOffset(object!, 4)[1]).toEqual(["foo"]);
   });
 
-  it("finds location for missing null value in object, middle of yaml body", async () => {
+  test("finds location for missing null value in object, middle of yaml body", async () => {
     const [object] = parseYaml("a: b\nc:\nd: e");
-    const [node, path] = findNodeAtOffset(object!, 6);
+    const [node, path] = findNodeAtOffset(object!, 7);
     expect(path).toEqual(["c"]);
   });
 
-  it("finds location for missing null value in object, middle of yaml body", async () => {
+  test("finds location for missing null value in object, middle of yaml body", async () => {
     const [object] = parseYaml("a: b\nc:\nd: e");
     const location1 = findLocationForJsonPointer(object!, "");
     const location2 = findLocationForJsonPointer(object!, "/a");

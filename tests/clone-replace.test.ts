@@ -1,13 +1,15 @@
+import { describe, expect, test } from "vitest";
+
 import { simpleClone } from "../src";
 
 describe("Clone replace functionality", () => {
-  it("Test that simple replacement works", async () => {
+  test("Test that simple replacement works", async () => {
     const object = { foo: "bar" };
     const object2 = simpleClone(object, (value) => "baz");
     expect(object2).toEqual({ foo: "baz" });
   });
 
-  it("Test that simple location works", async () => {
+  test("Test that simple location works", async () => {
     const object = { foo: "bar" };
     const object2 = simpleClone(object, (value, location) => {
       expect(location).toEqual(["foo"]);
@@ -16,7 +18,7 @@ describe("Clone replace functionality", () => {
     expect(object2).toEqual({ foo: "baz" });
   });
 
-  it("Test more complex locations", async () => {
+  test("Test more complex locations", async () => {
     const object = { foo: "foo", baz: "baz", rom: { com: "com" }, ram: ["ram1", "ram2"] };
     const object2 = simpleClone(object, (value, location) => {
       if (value == "foo") {

@@ -1,3 +1,4 @@
+import { expect } from "vitest";
 import * as yaml from "js-yaml";
 import * as json from "jsonc-parser";
 

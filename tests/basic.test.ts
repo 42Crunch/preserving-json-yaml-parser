@@ -1,10 +1,13 @@
-import { parseJson, parseYaml } from "../src";
+import { describe, expect, test } from "vitest";
 import { resolve } from "path";
 import { readFileSync } from "fs";
+import * as yaml from "js-yaml";
+
+import { parseJson, parseYaml } from "../src";
 import { parseToObject } from "./utils";
 
 describe("Basic functionality", () => {
-  it("Test Json 1", async () => {
+  test("Test Json 1", async () => {
     const text = readFileSync(resolve(__dirname, "xkcd.json"), { encoding: "utf8" });
     const object = parseToObject(text, "json");
 
@@ -13,7 +16,7 @@ describe("Basic functionality", () => {
     expect(object2).toEqual(object);
   });
 
-  it("Test Yaml 1", async () => {
+  test("Test Yaml 1", async () => {
     const text = readFileSync(resolve(__dirname, "xkcd.yaml"), { encoding: "utf8" });
     const object = parseToObject(text, "yaml");
 
@@ -22,7 +25,7 @@ describe("Basic functionality", () => {
     expect(object2).toEqual(object);
   });
 
-  it("Test Json 2", async () => {
+  test("Test Json 2", async () => {
     const text = readFileSync(resolve(__dirname, "petstore-v3.json"), { encoding: "utf8" });
     const object = parseToObject(text, "json");
 
@@ -31,7 +34,7 @@ describe("Basic functionality", () => {
     expect(object2).toEqual(object);
   });
 
-  it("Test Yaml 2", async () => {
+  test("Test Yaml 2", async () => {
     const text = readFileSync(resolve(__dirname, "petstore-v3.yaml"), { encoding: "utf8" });
 
     // Just make sure all possible anchors are there in the file
@@ -50,7 +53,7 @@ describe("Basic functionality", () => {
     expect(object2).toEqual(object);
   });
 
-  it("YAML null value", async () => {
+  test("YAML null value", async () => {
     const [object] = parseYaml("one: null\ntwo: ~\nthree:");
     //@ts-ignore
     expect(object["one"]).toEqual(null);
@@ -58,46 +61,70 @@ describe("Basic functionality", () => {
     expect(object!["three"]).toEqual(null);
   });
 
-  it("JSON null value", async () => {
+  test("JSON null value", async () => {
     const [object] = parseJson('{"one":null}');
     expect(object!["one"]).toEqual(null);
   });
 
-  it("YAML integer leading zeroes", async () => {
+  test("YAML integer leading zeroes", async () => {
     const [object] = parseYaml("agent: 007");
     expect(object!["agent"]).toEqual(7);
   });
 
-  it("YAML integer base 16", async () => {
+  test("YAML integer base 16", async () => {
     const [object] = parseYaml("agent: 0x20");
     expect(object!["agent"]).toEqual(32);
   });
 
-  it("YAML integer base 8", async () => {
+  test("YAML integer base 8", async () => {
     const [object] = parseYaml("agent: 0o40");
     expect(object!["agent"]).toEqual(32);
   });
 
-  it("should handle broken.yaml", async () => {
+  test("should handle broken.yaml", async () => {
     const text = readFileSync(resolve(__dirname, "broken.yaml"), { encoding: "utf8" });
     const [parsed, errors] = parseYaml(text);
-    expect(errors.length).toEqual(2);
+    expect(errors.length).toEqual(1);
   });
 
-  it("should handle broken.json", async () => {
+  test("should handle broken.json", async () => {
     const text = readFileSync(resolve(__dirname, "broken.json"), { encoding: "utf8" });
     const [parsed, errors] = parseJson(text);
     expect(errors.length).toEqual(1);
   });
 
-  it("should return undefined when YAML parser parsing strings", async () => {
+  test("should return undefined when YAML parser parsing strings", async () => {
     const [object] = parseYaml("foo");
     expect(object).toEqual(undefined);
   });
 
-  it("should return undefined when JSON parser parsing strings", async () => {
+  test("should return undefined when JSON parser parsing strings", async () => {
     const [object] = parseJson("foo");
     expect(object).toEqual(undefined);
+  });
+
+  test("should parse that particular regex in yaml", async () => {
+    const text = readFileSync(resolve(__dirname, "regex.yaml"), { encoding: "utf8" });
+    const [object] = parseYaml(text);
+    expect(object!["foo"]).toEqual("^[a-zA-Z0-9\\s(\\\\)',_.]*$");
+    expect("foo: ^[a-zA-Z0-9\\s(\\\\)',_.]*$\n").toEqual(yaml.dump(object));
+  });
+
+  test("should support custom tags in YAML", async () => {
+    const [object, errors] = parseYaml("one: !custom foo", {
+      "!custom": "scalar",
+    });
+    expect(object).toEqual({
+      one: "foo",
+    });
+  });
+
+  test("should report an error in case of invalid custom tag usage", async () => {
+    const [object, errors] = parseYaml("one: !customSeq foo", {
+      "!customSeq": "sequence",
+    });
+    expect(errors.length).toEqual(1);
+    expect(errors[0].message.startsWith("Unexpected type for tag")).toBeTruthy();
   });
 
   /*
