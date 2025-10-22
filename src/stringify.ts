@@ -5,11 +5,15 @@
 
 import { visitObject } from "./visit/object";
 
-export function stringify(value: any, indent: number = 0): string {
-  return indent === 0 ? stringify_plain(value) : stringify_format(value, indent);
+export type StringifyFormatter = (key: string | number, value: any, preserved: string) => string;
+
+export function stringify(value: any, indent: number = 0, formatter?: StringifyFormatter): string {
+  return indent === 0
+    ? stringify_plain(value, formatter)
+    : stringify_format(value, indent, formatter);
 }
 
-function stringify_plain(value: any): string {
+function stringify_plain(value: any, formatter?: StringifyFormatter): string {
   // safeguard for falsy values
   if (!value) {
     return JSON.stringify(value);
@@ -38,7 +42,7 @@ function stringify_plain(value: any): string {
     },
     onValue: (parent: any, key: string | number, value: any, preserved: string | undefined) => {
       if (preserved !== undefined) {
-        result.push(keyed(key, preserved) + ",");
+        result.push(keyed(key, formatter ? formatter(key, value, preserved) : preserved) + ",");
       } else {
         result.push(keyed(key, JSON.stringify(value)) + ",");
       }
@@ -51,7 +55,7 @@ function stringify_plain(value: any): string {
   return result.join("");
 }
 
-function stringify_format(value: any, indent: number): string {
+function stringify_format(value: any, indent: number, formatter?: StringifyFormatter): string {
   // safeguard for falsy values
   if (!value) {
     return JSON.stringify(value);
@@ -106,7 +110,11 @@ function stringify_format(value: any, indent: number): string {
       // mark current container as non-empty
       isEmpty[isEmpty.length - 1] = false;
       if (preserved !== undefined) {
-        result.push(padding(indent, level) + keyed(key, preserved, false) + ",\n");
+        result.push(
+          padding(indent, level) +
+            keyed(key, formatter ? formatter(key, value, preserved) : preserved, false) +
+            ",\n"
+        );
       } else {
         result.push(padding(indent, level) + keyed(key, JSON.stringify(value), false) + ",\n");
       }
