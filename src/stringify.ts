@@ -5,7 +5,7 @@
 
 import { visitObject } from "./visit/object";
 
-export type StringifyFormatter = (key: string | number, value: any, preserved: string) => string;
+export type StringifyFormatter = (value: unknown, preserved: string) => string;
 
 export function stringify(value: any, indent: number = 0, formatter?: StringifyFormatter): string {
   return indent === 0
@@ -42,7 +42,7 @@ function stringify_plain(value: any, formatter?: StringifyFormatter): string {
     },
     onValue: (parent: any, key: string | number, value: any, preserved: string | undefined) => {
       if (preserved !== undefined) {
-        result.push(keyed(key, formatter ? formatter(key, value, preserved) : preserved) + ",");
+        result.push(keyed(key, formatter ? formatter(value, preserved) : preserved) + ",");
       } else {
         result.push(keyed(key, JSON.stringify(value)) + ",");
       }
@@ -112,7 +112,7 @@ function stringify_format(value: any, indent: number, formatter?: StringifyForma
       if (preserved !== undefined) {
         result.push(
           padding(indent, level) +
-            keyed(key, formatter ? formatter(key, value, preserved) : preserved, false) +
+            keyed(key, formatter ? formatter(value, preserved) : preserved, false) +
             ",\n"
         );
       } else {

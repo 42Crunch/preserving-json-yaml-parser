@@ -7,7 +7,7 @@ describe("Basic StringifyFormatter functionality", () => {
     const json = '{"a": 1, "b": 2.5, "c": 3.14}';
     const [value] = parse(json, "json", {});
 
-    const formatter: StringifyFormatter = (key, value, preserved) => {
+    const formatter: StringifyFormatter = (value, preserved) => {
       return "0";
     };
 
@@ -20,7 +20,7 @@ describe("Basic StringifyFormatter functionality", () => {
     const json = `{"a": "1", "b": 2.5, "c": ${maxsafe}, "d": ${maxsafe}01234, "e": ${maxsafe}01234.00}`;
     const [value] = parse(json, "json", {});
 
-    const formatter: StringifyFormatter = (key, value, preserved) => {
+    const formatter: StringifyFormatter = (value, preserved) => {
       if (typeof value === "number") {
         if (/\.0+$/.test(preserved)) {
           return preserved.slice(0, preserved.indexOf("."));
