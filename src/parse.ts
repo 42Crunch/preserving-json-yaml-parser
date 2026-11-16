@@ -3,17 +3,17 @@
  Licensed under the GNU Affero General Public License version 3. See LICENSE.txt in the project root for license information.
 */
 
-import { Location, Parsed } from "./types";
-import { visitYaml } from "./visit/yaml";
-import { visitJson } from "./visit/json";
+import { Location, Parsed, Visitor } from "./types";
+import { visitYaml, YamlVisitContext } from "./visit/yaml";
+import { ExtendedError, ExtendedErrorCode, visitJson } from "./visit/json";
 import {
   getPreservedLocation,
+  preservedNumberSource,
+  setOwnValue,
   setPreservedLocation,
   setPreservedRootRange,
   setPreservedValue,
 } from "./preserve";
-
-import { ExtendedError, ExtendedErrorCode, parseTree, ExtendedNode } from "./json-parser";
 
 import * as json from "jsonc-parser";
 import * as yaml from "yaml";
@@ -32,13 +32,15 @@ function extendedErrorToMessage(error: ExtendedError) {
 export function parseJson(
   text: string
 ): [Parsed | undefined, { message: string; offset: number; length: number }[]] {
-  const parseErrors: json.ParseError[] = [];
+  const parseErrors: ExtendedError[] = [];
 
-  const node = parseTree(text, parseErrors, {
-    disallowComments: true,
-    allowTrailingComma: false,
-    allowEmptyContent: false,
-  });
+  const parsed = runvisitor((visitor) =>
+    visitJson(text, visitor, parseErrors, {
+      disallowComments: true,
+      allowTrailingComma: false,
+      allowEmptyContent: false,
+    })
+  );
 
   const normalizedErrors = parseErrors.map((error) => ({
     message: extendedErrorToMessage(error),
@@ -46,60 +48,59 @@ export function parseJson(
     length: error.length,
   }));
 
-  if (node) {
-    const parsed = runvisitor(visitJson, undefined, node);
-    return [parsed, normalizedErrors];
-  }
-
-  return [undefined, normalizedErrors];
+  return [parsed, normalizedErrors];
 }
 
 export function parseYaml(
   text: string,
   customTags?: { [tag: string]: "scalar" | "sequence" | "mapping" }
 ): [Parsed | undefined, { message: string; offset: number }[]] {
-  const documents = yaml.parseAllDocuments(text, {
-    customTags: getCustomTags(customTags || {}),
-  });
+  const tags = getCustomTags(customTags || {});
+  // yaml's check for duplicate keys is quadratic, visitYaml() does it instead
+  const documents = yaml.parseAllDocuments(text, { customTags: tags, uniqueKeys: false });
 
   if (documents.length !== 1) {
     return [undefined, []];
   }
 
-  const document = documents[0];
+  const document = documents[0] as yaml.Document;
 
-  const normalizedErrors = document.errors.map((error) => ({
+  const aliasErrors: { message: string; offset: number; length: number }[] = [];
+  const context: YamlVisitContext = {
+    document,
+    hasDuplicateKeys: false,
+    onUnresolvedAlias: (key, node) => {
+      aliasErrors.push({
+        message: `Alias "${key}" could not be resolved`,
+        offset: node.range![0],
+        length: node.range![1] - node.range![0],
+      });
+    },
+  };
+
+  const parsed = runvisitor((visitor) =>
+    visitYaml(context, "fakeroot", undefined, document.contents as yaml.Node, visitor)
+  );
+
+  // duplicate keys are rare, parse again to get the errors exactly as yaml reports them
+  const errors = context.hasDuplicateKeys
+    ? (yaml.parseAllDocuments(text, { customTags: tags })[0] as yaml.Document).errors
+    : document.errors;
+
+  const normalizedErrors = errors.map((error) => ({
     message: error.message,
     offset: error.pos[0],
     length: error.pos[1] - error.pos[0],
   }));
 
-  yaml.visit(document, {
-    Alias(key, node) {
-      if (!node.resolve(document)) {
-        normalizedErrors.push({
-          message: `Alias "${key}" could not be resolved`,
-          offset: node.range![0],
-          length: node.range![1] - node.range![0],
-        });
-      }
-    },
-  });
-
-  const parsed = runvisitor(visitYaml, document, document.contents as yaml.Node);
-
-  return [parsed, normalizedErrors];
+  return [parsed, normalizedErrors.concat(aliasErrors)];
 }
 
-function runvisitor(
-  visit: Function,
-  document: yaml.Document | undefined,
-  root: ExtendedNode | yaml.Node
-): Parsed | undefined {
+function runvisitor(visit: (visitor: Visitor) => void): Parsed | undefined {
   let container: any = {};
   const stack: any[] = [container];
 
-  visit(document, null, "fakeroot", root, {
+  visit({
     onObjectStart: (
       parent: any,
       key: string | number,
@@ -110,7 +111,9 @@ function runvisitor(
         setPreservedLocation(container, key, location);
       }
       stack.push(container);
-      container = container[key] = {};
+      const object = {};
+      setOwnValue(container, key, object);
+      container = object;
     },
     onObjectEnd: () => {
       container = stack.pop();
@@ -125,7 +128,9 @@ function runvisitor(
         setPreservedLocation(container, key, location);
       }
       stack.push(container);
-      container = container[key] = [];
+      const array: any[] = [];
+      setOwnValue(container, key, array);
+      container = array;
     },
     onArrayEnd: () => {
       container = stack.pop();
@@ -137,9 +142,12 @@ function runvisitor(
       raw: string | undefined,
       location: Location | undefined
     ) => {
-      container[key] = value;
-      if (typeof value === "number" && raw !== undefined) {
-        setPreservedValue(container, key, raw);
+      setOwnValue(container, key, value);
+      if (typeof value === "number") {
+        const preserved = preservedNumberSource(value, raw);
+        if (preserved !== undefined) {
+          setPreservedValue(container, key, preserved);
+        }
       }
       if (location) {
         setPreservedLocation(container, key, location);
@@ -147,7 +155,7 @@ function runvisitor(
     },
   });
 
-  if (typeof stack[0].fakeroot !== "object") {
+  if (typeof stack[0].fakeroot !== "object" || stack[0].fakeroot === null) {
     return undefined;
   }
 

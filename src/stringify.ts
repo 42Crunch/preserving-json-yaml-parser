@@ -41,11 +41,7 @@ function stringify_plain(value: any, formatter?: StringifyFormatter): string {
       result.push("],");
     },
     onValue: (parent: any, key: string | number, value: any, preserved: string | undefined) => {
-      if (preserved !== undefined) {
-        result.push(keyed(key, formatter ? formatter(value, preserved) : preserved) + ",");
-      } else {
-        result.push(keyed(key, JSON.stringify(value)) + ",");
-      }
+      result.push(keyed(key, formatValue(value, preserved, formatter)) + ",");
     },
   });
 
@@ -109,15 +105,9 @@ function stringify_format(value: any, indent: number, formatter?: StringifyForma
     onValue: (parent: any, key: string | number, value: any, preserved: string | undefined) => {
       // mark current container as non-empty
       isEmpty[isEmpty.length - 1] = false;
-      if (preserved !== undefined) {
-        result.push(
-          padding(indent, level) +
-            keyed(key, formatter ? formatter(value, preserved) : preserved, false) +
-            ",\n"
-        );
-      } else {
-        result.push(padding(indent, level) + keyed(key, JSON.stringify(value), false) + ",\n");
-      }
+      result.push(
+        padding(indent, level) + keyed(key, formatValue(value, preserved, formatter), false) + ",\n"
+      );
     },
   });
 
@@ -137,6 +127,22 @@ function keyed(key: string | number, value: string, tight: boolean = true) {
   return typeof key === "string" ? JSON.stringify(key) + separator + value : value;
 }
 
+// numbers are preserved only when JSON.stringify() would change them, but the formatter
+// is given every number
+function formatValue(
+  value: any,
+  preserved: string | undefined,
+  formatter: StringifyFormatter | undefined
+): string {
+  if (formatter && (preserved !== undefined || typeof value === "number")) {
+    return formatter(value, preserved ?? JSON.stringify(value));
+  }
+  return preserved ?? JSON.stringify(value);
+}
+
+const paddings: string[] = [];
+
 function padding(indent: number, level: number): string {
-  return " ".repeat(indent * level);
+  const length = indent * level;
+  return paddings[length] ?? (paddings[length] = " ".repeat(length));
 }
