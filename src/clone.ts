@@ -4,7 +4,7 @@
 */
 
 import { visitObject } from "./visit/object";
-import { copyPreservedValues } from "./preserve";
+import { copyPreservedValues, setOwnValue } from "./preserve";
 import { Path } from "./types";
 
 export function simpleClone<T>(orig: T, replacer?: (value: unknown, location: Path) => unknown): T {
@@ -16,7 +16,9 @@ export function simpleClone<T>(orig: T, replacer?: (value: unknown, location: Pa
     onObjectStart: (parent: any, key: string | number, value: any) => {
       location.push(key);
       stack.push(container);
-      container = container[key] = {};
+      const object = {};
+      setOwnValue(container, key, object);
+      container = object;
       copyPreservedValues(value, container);
     },
     onObjectEnd: () => {
@@ -26,7 +28,9 @@ export function simpleClone<T>(orig: T, replacer?: (value: unknown, location: Pa
     onArrayStart: (parent: any, key: string | number, value: any) => {
       location.push(key);
       stack.push(container);
-      container = container[key] = [];
+      const array: any[] = [];
+      setOwnValue(container, key, array);
+      container = array;
       copyPreservedValues(value, container);
     },
     onArrayEnd: () => {
@@ -34,7 +38,7 @@ export function simpleClone<T>(orig: T, replacer?: (value: unknown, location: Pa
       container = stack.pop();
     },
     onValue: (parent: any, key: string | number, value: any, preserved: string | undefined) => {
-      container[key] = replacer ? replacer(value, [...location.slice(1), key]) : value;
+      setOwnValue(container, key, replacer ? replacer(value, [...location.slice(1), key]) : value);
     },
   });
 
